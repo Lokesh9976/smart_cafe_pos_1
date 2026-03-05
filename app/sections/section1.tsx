@@ -1,6 +1,7 @@
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getTables } from "../tableStatusStore";
 import {
   FlatList,
   ImageBackground,
@@ -73,6 +74,16 @@ const TABLES: TableItem[] = [
 ];
 
 export default function Section1() {
+  const [, forceUpdate] = useState(0);
+
+useEffect(() => {
+  const timer = setInterval(() => {
+    forceUpdate(v => v + 1);
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, []);
+
   const { width, height } = useWindowDimensions();
   const router = useRouter();
 
@@ -85,10 +96,59 @@ export default function Section1() {
   const itemSize =
     (width - SCREEN_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
 
-  const numberFont = Math.max(14, Math.min(18, itemSize * 0.28));
+  const numberFont = Math.max(18, Math.min(24, itemSize * 0.32));
   const smallFont = Math.max(10, Math.min(13, itemSize * 0.2));
 
   const renderItem = ({ item }: { item: TableItem }) => {
+    const tables = getTables();
+
+const tableData = tables.find(
+  t => t.section === "SECTION_1" && t.tableNo === item.label
+);
+
+let borderColor = "rgba(255, 255, 255, 0.43)";
+let textColor = "#ffffff";
+let bgColor = "rgba(255,255,255,0.08)";
+let timeText = "";
+let orderText = "";
+
+if (tableData) {
+
+  const minutes =
+    Math.floor((Date.now() - tableData.startTime) / 60000);
+
+  if (minutes >= 30) {
+
+  // 🔴 LATE ORDER
+  borderColor = "#ffffff";
+  bgColor = "rgba(246,8,8,0.85)";
+  textColor = "#ffffff";
+
+} else if (minutes >= 15) {
+
+  // 🟠 WARNING
+  borderColor = "#ffffff";
+  bgColor = "rgba(255,165,0,0.85)";
+  textColor = "#ffffff";
+
+} else {
+
+  // 🟢 NORMAL HOLD
+  borderColor = "#ffffff";
+  bgColor = "rgba(65,225,16,0.85)";
+  textColor = "#ffffff";
+
+}
+  const time = new Date(tableData.startTime);
+
+  const hours = time.getHours().toString().padStart(2,"0");
+  const mins = time.getMinutes().toString().padStart(2,"0");
+
+  timeText = `${hours}:${mins}`;
+  orderText = `#${tableData.orderId}`;
+
+}
+
     const isActive = item.status === "active";
 
     return (
@@ -96,11 +156,10 @@ export default function Section1() {
         style={[
           styles.tableBox,
           {
-            width: itemSize,
+           width: itemSize,
             height: itemSize,
-            borderColor: isActive
-              ? "rgba(190,255,120,0.8)"
-              : "rgba(255,255,255,0.35)",
+            borderColor: borderColor,
+            backgroundColor: bgColor,
           },
         ]}
         activeOpacity={0.85}
@@ -119,25 +178,31 @@ export default function Section1() {
           tint="dark"
           style={styles.glassInner}
         >
-          {item.status ? (
+          {item.status || tableData ? (
             <View style={styles.tableContent}>
               <Text
                 style={[
                   styles.tableNumber,
                   {
                     fontSize: numberFont,
-                    color: isActive ? "#d7ff9a" : "#ffffff",
+                    color: textColor,
                   },
                 ]}
               >
                 {item.label}
               </Text>
 
-              {item.time && (
-                <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                  {item.time}
-                </Text>
-              )}
+              {tableData && (
+               <>
+                    <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                      {timeText}
+                    </Text>
+
+                    <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                      {orderText}
+                    </Text>
+                  </>
+                )}
               {item.order && (
                 <Text style={[styles.smallText, { fontSize: smallFont }]}>
                   {item.order}
@@ -200,7 +265,11 @@ export default function Section1() {
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1, width: "100%", height: "100%" },
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -208,20 +277,23 @@ const styles = StyleSheet.create({
   },
 
   /* ===== Top Bar ===== */
+
   topBar: {
-    height: 56,
+    height: 60,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 18,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.08)",
   },
 
   backBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.12)",
   },
 
   backText: {
@@ -232,45 +304,55 @@ const styles = StyleSheet.create({
 
   headerTitle: {
     color: "#d7ff9a",
-    fontSize: 18,
-    fontWeight: "800",
-    letterSpacing: 0.5,
+    fontSize: 20,
+    fontWeight: "900",
+    letterSpacing: 0.6,
   },
 
   /* ===== Table Card ===== */
+
   tableBox: {
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: "hidden",
-    borderWidth: 1.2,
-    shadowColor: "#00000000",
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1.4,
+    borderColor: "rgba(255,255,255,0.25)",
+
+    backgroundColor: "rgba(255,255,255,0.07)",
+
+    shadowColor: "#000",
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+
+    elevation: 8,
   },
 
   glassInner: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 6,
   },
 
-  tableContent: { alignItems: "center" },
+  tableContent: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   tableNumber: {
     fontWeight: "900",
-    marginBottom: 2,
+    marginBottom: 4,
+    letterSpacing: 0.5,
+
     textShadowColor: "rgba(0,0,0,0.7)",
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    letterSpacing: 0.3,
+    textShadowRadius: 5,
   },
 
   smallText: {
-    lineHeight: 14,
-    opacity: 0.95,
+    lineHeight: 15,
     fontWeight: "600",
-    color: "#eaeaea",
+    color: "#f0f0f0",
+    opacity: 0.95,
   },
 });

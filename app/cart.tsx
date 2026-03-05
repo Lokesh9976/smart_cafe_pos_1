@@ -1,5 +1,9 @@
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
+import { holdOrder } from "./heldOrdersStore";
+import { setTableHold } from "./tableStatusStore";
+import { getNextOrderId } from "./orderIdStore";
+
 import {
   Dimensions,
   FlatList,
@@ -16,6 +20,7 @@ import {
   getCart,
   removeFromCartGlobal,
 } from "./cartStore";
+
 import { getOrderContext } from "./orderContextStore";
 
 export default function CartScreen() {
@@ -24,7 +29,6 @@ export default function CartScreen() {
 
   const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
-  // ✅ Hooks MUST be declared before any conditional return
   const [cart, setCart] = useState(getCart());
   const refreshCart = () => setCart([...getCart()]);
 
@@ -34,7 +38,6 @@ export default function CartScreen() {
     }, 0);
   }, [cart]);
 
-  // ✅ Guard AFTER hooks
   if (!orderContext) {
     router.replace("/(tabs)/category");
     return null;
@@ -67,7 +70,7 @@ export default function CartScreen() {
             </View>
           </View>
 
-          {/* ORDER CONTEXT HEADER */}
+          {/* ORDER HEADER */}
           {orderContext.orderType === "DINE_IN" && (
             <Text style={styles.contextText}>
               DINE-IN | {orderContext.section} | Table {orderContext.tableNo}
@@ -82,7 +85,7 @@ export default function CartScreen() {
 
           <Text style={styles.title}>YOUR CART</Text>
 
-          {/* ITEMS */}
+          {/* CART ITEMS */}
           <FlatList
             data={cart}
             keyExtractor={(i, index) => i.id + index}
@@ -146,17 +149,53 @@ export default function CartScreen() {
             )}
           />
 
+          {/* VIEW HELD ORDERS */}
+          <Pressable
+            style={styles.holdListBtn}
+            onPress={() => router.push("/heldOrders" as any)}
+          >
+            <Text style={styles.holdText}>View Held Orders</Text>
+          </Pressable>
+
           <View style={styles.divider} />
 
           {/* SUBTOTAL */}
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>SGD {subtotal.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>
+              SGD {subtotal.toFixed(2)}
+            </Text>
           </View>
 
           <View style={styles.divider} />
 
-          {/* PROCEED BUTTON */}
+        {/* HOLD ORDER */}
+<Pressable
+  style={styles.holdBtn}
+  onPress={() => {
+
+    const orderId = getNextOrderId();
+
+    holdOrder(cart, orderContext);
+
+    if (orderContext.orderType === "DINE_IN") {
+      setTableHold(
+        orderContext.section!,
+        orderContext.tableNo!,
+        orderId
+      );
+    }
+
+    clearCart();
+
+    router.replace("/(tabs)/category");
+
+  }}
+>
+  <Text style={styles.holdText}>Hold Order</Text>
+</Pressable>
+
+          {/* PROCEED */}
           <Pressable
             style={styles.proceedBtn}
             onPress={() => router.push("/summary" as any)}
@@ -168,8 +207,6 @@ export default function CartScreen() {
     </View>
   );
 }
-
-/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   overlay: {
@@ -286,6 +323,28 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 18,
+  },
+
+  holdListBtn: {
+    backgroundColor: "#f59e0b",
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  holdBtn: {
+    backgroundColor: "#f59e0b",
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  holdText: {
+    color: "#000",
+    fontWeight: "900",
+    fontSize: 16,
   },
 
   divider: {

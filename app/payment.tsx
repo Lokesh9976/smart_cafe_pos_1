@@ -1,5 +1,10 @@
+import { clearTable } from "./tableStatusStore";
+import { clearCart, getCart } from "./cartStore";
+import { clearOrderContext, getOrderContext } from "./orderContextStore";
+
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
+
 import {
   ActivityIndicator,
   Dimensions,
@@ -11,11 +16,9 @@ import {
   View,
 } from "react-native";
 
-import { clearCart, getCart } from "./cartStore";
-import { clearOrderContext, getOrderContext } from "./orderContextStore";
-
 export default function PaymentScreen() {
   const router = useRouter();
+
   const cart = getCart();
   const orderContext = getOrderContext();
 
@@ -25,7 +28,7 @@ export default function PaymentScreen() {
 
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + (item.price || 0) * item.qty, 0),
-    [cart],
+    [cart]
   );
 
   const gst = subtotal * 0.09;
@@ -34,11 +37,8 @@ export default function PaymentScreen() {
   /* ================= STATE ================= */
 
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
-
   const [cashInput, setCashInput] = useState<string>("");
-
   const [isProcessing, setIsProcessing] = useState(false);
-
   const [isSuccess, setIsSuccess] = useState(false);
 
   /* ================= GUARD ================= */
@@ -79,11 +79,17 @@ export default function PaymentScreen() {
       setIsProcessing(false);
       setIsSuccess(true);
 
+      // ✅ CLEAR TABLE STATUS
+      if (orderContext?.orderType === "DINE_IN") {
+        clearTable(orderContext.section!, orderContext.tableNo!);
+      }
+
       setTimeout(() => {
         clearCart();
         clearOrderContext();
+
         router.replace("/(tabs)/category" as any);
-      }, 5000);
+      }, 4000);
     }, 2500);
   };
 
@@ -176,7 +182,6 @@ export default function PaymentScreen() {
                     ))}
                   </View>
 
-                  {/* Insufficient Warning */}
                   {paidAmount < total && paidAmount > 0 && (
                     <Text style={styles.errorText}>
                       ⚠ Insufficient Amount{"\n"}
@@ -184,7 +189,6 @@ export default function PaymentScreen() {
                     </Text>
                   )}
 
-                  {/* Change Display */}
                   {paidAmount >= total && (
                     <Text style={styles.changeText}>
                       Change: SGD {change.toFixed(2)}
