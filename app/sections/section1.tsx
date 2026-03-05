@@ -1,7 +1,6 @@
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { getTables } from "../tableStatusStore";
 import {
   FlatList,
   ImageBackground,
@@ -13,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { setOrderContext } from "../orderContextStore";
+import { getTables } from "../tableStatusStore";
 
 type TableItem = {
   id: string;
@@ -24,15 +24,8 @@ type TableItem = {
 };
 
 const TABLES: TableItem[] = [
-  {
-    id: "1",
-    label: "1",
-    status: "active",
-    time: "17:24 PM",
-    order: "#1725",
-    amount: "$31.00",
-  },
-  { id: "2", label: "2" },
+  { id: "1", label: "1",},
+  { id: "2", label: "2" }, 
   { id: "3", label: "3" },
   { id: "4", label: "4" },
   { id: "5", label: "5" },
@@ -231,7 +224,7 @@ if (tableData) {
 
   return (
     <ImageBackground
-      source={require("../../assets/images/11.jpg")}
+      source={require("../../assets/images/002.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
