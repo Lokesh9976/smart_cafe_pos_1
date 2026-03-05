@@ -1,14 +1,14 @@
-import React from "react";
+import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
+import React from "react";
 import {
+  ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
-  ImageBackground,
 } from "react-native";
-import { BlurView } from "expo-blur";
 
 export default function Category() {
   const { width, height } = useWindowDimensions();
@@ -36,22 +36,33 @@ export default function Category() {
     router.replace("/");
   };
 
+  const handleTimeEntry = () => {
+    router.push("/TimeEntry");
+  };
+
   return (
     <ImageBackground
       source={require("../../assets/images/11.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
-      {/* 🔴 Logout Button (Glassy) */}
+      {/* 🔵 Time Entry Button */}
+      <TouchableOpacity style={styles.timeEntryBtn} onPress={handleTimeEntry}>
+        <BlurView intensity={40} tint="dark" style={styles.glassBtnInner}>
+          <Text style={styles.buttonText}>Time Entry</Text>
+        </BlurView>
+      </TouchableOpacity>
+
+      {/* 🔴 Logout Button */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <BlurView intensity={40} tint="dark" style={styles.glassBtnInner}>
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.buttonText}>Logout</Text>
         </BlurView>
       </TouchableOpacity>
 
       {/* Content */}
       <View style={styles.contentWrapper}>
-        {/* Glassy Title */}
+        {/* Title */}
         <BlurView intensity={50} tint="dark" style={styles.glassTitle}>
           <Text style={styles.titleText}>Choose Your Category</Text>
         </BlurView>
@@ -87,10 +98,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "rgba(0,0,0,0.25)", // slight dark overlay
+    backgroundColor: "rgba(0,0,0,0.25)",
   },
 
-  /* ===== Title Glass ===== */
+  /* Title Glass */
   glassTitle: {
     marginBottom: 20,
     borderRadius: 14,
@@ -98,6 +109,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.3)",
   },
+
   titleText: {
     fontSize: 22,
     color: "#e5ff9a",
@@ -113,19 +125,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
-  /* ===== Glassy Box ===== */
+  /* Category Box */
   box: {
     borderRadius: 18,
     overflow: "hidden",
     marginBottom: 14,
-    shadowColor: "#00000004",
+    shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 5,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0)",
-    backgroundColor: "rgba(255, 255, 255, 0)",
+    borderColor: "rgba(255,255,255,0.2)",
   },
 
   glassBoxInner: {
@@ -138,12 +149,9 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 20,
     fontWeight: "800",
-    textShadowColor: "rgba(0, 0, 0, 0)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
 
-  /* ===== Logout Glass Button ===== */
+  /* Logout Button */
   logoutBtn: {
     position: "absolute",
     top: 50,
@@ -151,7 +159,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "rgba(20, 2, 2, 0.69)",
+    borderColor: "rgba(255,255,255,0.3)",
+    zIndex: 10,
+  },
+
+  /* Time Entry Button */
+  timeEntryBtn: {
+    position: "absolute",
+    top: 50,
+    right: 120,
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.3)",
     zIndex: 10,
   },
 
@@ -160,8 +180,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
 
-  logoutText: {
-    color: "#fffcfd",
+  buttonText: {
+    color: "#ffffff",
     fontWeight: "800",
     fontSize: 14,
   },
