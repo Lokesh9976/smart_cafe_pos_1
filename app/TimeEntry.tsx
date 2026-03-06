@@ -8,17 +8,23 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
+
+type ActiveField = "user" | "pass" | "staff";
 
 export default function TimeEntry() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
 
-  const [userId, setUserId] = useState("");
-  const [password, setPassword] = useState("");
-  const [staffName, setStaffName] = useState("");
-  const [active, setActive] = useState<"user" | "pass" | "staff">("user");
+  const isTablet = width < 900;
 
-  const [time, setTime] = useState(new Date());
+  const [userId, setUserId] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [staffName, setStaffName] = useState<string>("");
+  const [active, setActive] = useState<ActiveField>("user");
+
+  const [time, setTime] = useState<Date>(new Date());
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -28,7 +34,7 @@ export default function TimeEntry() {
   const date = time.toLocaleDateString("en-GB");
   const clock = time.toLocaleTimeString("en-GB");
 
-  const keypad = [
+  const keypad: string[] = [
     "1",
     "2",
     "3",
@@ -47,24 +53,36 @@ export default function TimeEntry() {
     "Ent",
   ];
 
-  const getValue = () => {
+  const getValue = (): string => {
     if (active === "user") return userId;
     if (active === "pass") return password;
     return staffName;
   };
 
-  const setValue = (val: string) => {
+  const setValue = (val: string): void => {
     if (active === "user") setUserId(val);
     if (active === "pass") setPassword(val);
     if (active === "staff") setStaffName(val);
   };
 
-  const handleKeyPress = (key: string) => {
+  const handleKeyPress = (key: string): void => {
     let value = getValue();
 
-    if (key === "Bksp") return setValue(value.slice(0, -1));
-    if (key === "Clear") return setValue("");
-    if (key === "Space") return setValue(value + " ");
+    if (key === "Bksp") {
+      setValue(value.slice(0, -1));
+      return;
+    }
+
+    if (key === "Clear") {
+      setValue("");
+      return;
+    }
+
+    if (key === "Space") {
+      setValue(value + " ");
+      return;
+    }
+
     if (key === "Ent") {
       console.log({ userId, password, staffName });
       return;
@@ -96,8 +114,13 @@ export default function TimeEntry() {
         </BlurView>
 
         {/* CONTENT */}
-        <View style={styles.content}>
-          {/* LOGIN */}
+        <View
+          style={[
+            styles.content,
+            { flexDirection: isTablet ? "column" : "row" },
+          ]}
+        >
+          {/* LOGIN FORM */}
           <BlurView intensity={40} tint="dark" style={styles.form}>
             <Text style={styles.label}>User ID</Text>
             <TextInput
@@ -160,7 +183,7 @@ const styles = StyleSheet.create({
 
   overlay: {
     flex: 1,
-    padding: 16,
+    padding: 20,
     backgroundColor: "rgba(0,0,0,0.25)",
   },
 
@@ -168,9 +191,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 12,
-    borderRadius: 14,
-    marginBottom: 16,
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 20,
   },
 
   back: {
@@ -179,7 +202,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "800",
     color: "#fff",
   },
@@ -191,80 +214,86 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 30,
+    width: "100%",
   },
 
   form: {
-    width: 320,
-    padding: 18,
-    borderRadius: 16,
+    width: "100%",
+    maxWidth: 380,
+    padding: 20,
+    borderRadius: 18,
   },
 
   label: {
     color: "#fff",
-    marginBottom: 4,
-    marginTop: 8,
+    marginBottom: 6,
+    marginTop: 10,
+    fontSize: 14,
   },
 
   input: {
     backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 8,
-    padding: 8,
+    borderRadius: 10,
+    padding: 12,
     color: "#fff",
+    fontSize: 16,
   },
 
   buttons: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginTop: 20,
+    marginTop: 22,
   },
 
   inBtn: {
     backgroundColor: "#6ccf9f",
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: "center",
     alignItems: "center",
   },
 
   outBtn: {
     backgroundColor: "#e58f8f",
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: "center",
     alignItems: "center",
   },
 
   btnText: {
     fontWeight: "800",
+    fontSize: 16,
   },
 
   keypad: {
-    width: 260,
+    width: "100%",
+    maxWidth: 340,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    padding: 12,
-    borderRadius: 16,
+    padding: 16,
+    borderRadius: 18,
   },
 
   key: {
     width: "23%",
-    height: 45,
-    borderRadius: 8,
+    height: 60,
+    borderRadius: 10,
     backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 8,
+    marginBottom: 10,
   },
 
   keyText: {
     color: "#fff",
     fontWeight: "700",
+    fontSize: 16,
   },
 });
