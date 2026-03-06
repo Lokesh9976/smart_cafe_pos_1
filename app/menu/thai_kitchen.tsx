@@ -382,17 +382,50 @@ export default function ThaiKitchen() {
   return (
     <View style={{ flex: 1, backgroundColor: "#0b0b0b" }}>
       {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.title}>THAI KITCHEN</Text>
-        <Pressable onPress={() => router.push("/cart")} style={styles.cartBtn}>
-          <Text style={styles.cartText}>Cart</Text>
-          {totalItems > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{totalItems}</Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+<View style={styles.header}>
+
+  <Text style={styles.title}>THAI KITCHEN</Text>
+
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+
+    {/* Cart Button */}
+    <Pressable
+      onPress={() => router.replace("/cart")}
+      style={styles.cartBtn}
+    >
+      <Text style={styles.cartText}>Cart</Text>
+
+      {totalItems > 0 && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{totalItems}</Text>
+        </View>
+      )}
+    </Pressable>
+
+    {/* Back Button */}
+    <Pressable
+      onPress={() => {
+  if (orderContext?.section === "SECTION_1") {
+    router.replace("/sections/section1");
+  } 
+  else if (orderContext?.section === "SECTION_2") {
+    router.replace("/sections/section2");
+  } 
+  else if (orderContext?.section === "SECTION_3") {
+    router.replace("/sections/section3");
+  } 
+  else if (orderContext?.orderType === "TAKEAWAY") {
+    router.replace("/sections/takeaway");
+  }
+}}
+      style={styles.backBtn}
+    >
+      <Text style={styles.backText}>Back</Text>
+    </Pressable>
+
+  </View>
+
+</View>
 
       {/* KITCHENS - UPDATED DESIGN */}
       <View style={styles.kitchensContainer}>
@@ -413,7 +446,7 @@ export default function ThaiKitchen() {
                   { width: width < 600 ? 80 : 100 }
                 ]}
                 onPress={() => {
-                  if (!isActive) router.push(k.route as any);
+                  if (!isActive) router.replace(k.route as any);
                 }}
               >
                 <View style={[
@@ -586,6 +619,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   badgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+
+  backBtn: {
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 8,
+  backgroundColor: "#333",
+},
+
+backText: {
+  color: "#fff",
+  fontWeight: "700",
+},
 
   // --- KITCHEN STYLES ---
   kitchensContainer: {

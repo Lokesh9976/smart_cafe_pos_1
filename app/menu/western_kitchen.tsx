@@ -41,13 +41,13 @@ const ACTIVE_KITCHEN = "WESTERN KITCHEN";
 /* ================= GROUPS ================= */
 const GROUPS = [
   { id: "g1", name: "Appetizer" },
-  { id: "g3", name: "Pasta" },
-  { id: "g1", name: "Burgers" },
-  { id: "g2", name: "Pizza" },
-  { id: "g2", name: "Baked Rice" },
-  { id: "g2", name: "Salad" },
-  { id: "g2", name: "Chicken" },
-  { id: "g2", name: "Lamb" },
+  { id: "g2", name: "Pasta" },
+  { id: "g3", name: "Burgers" },
+  { id: "g4", name: "Pizza" },
+  { id: "g5", name: "Baked Rice" },
+  { id: "g6", name: "Salad" },
+  { id: "g7", name: "Chicken" },
+  { id: "g8", name: "Lamb" },
 ];
 
 /* ================= ITEMS ================= */
@@ -372,23 +372,50 @@ export default function WesternKitchen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0b0b0b" }}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
+     {/* HEADER */}
+<View style={styles.header}>
 
-        <Text style={styles.title}>WESTERN KITCHEN</Text>
+  <Text style={styles.title}>WESTERN KITCHEN</Text>
 
-        <Pressable onPress={() => router.push("/cart")} style={styles.cartBtn}>
-          <Text style={styles.cartText}>Cart</Text>
-          {totalItems > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{totalItems}</Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+
+    {/* Cart Button */}
+    <Pressable
+      onPress={() => router.replace("/cart")}
+      style={styles.cartBtn}
+    >
+      <Text style={styles.cartText}>Cart</Text>
+
+      {totalItems > 0 && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{totalItems}</Text>
+        </View>
+      )}
+    </Pressable>
+
+    {/* Back Button */}
+    <Pressable
+onPress={() => {
+  if (orderContext?.section === "SECTION_1") {
+    router.replace("/sections/section1");
+  } 
+  else if (orderContext?.section === "SECTION_2") {
+    router.replace("/sections/section2");
+  } 
+  else if (orderContext?.section === "SECTION_3") {
+    router.replace("/sections/section3");
+  } 
+  else if (orderContext?.orderType === "TAKEAWAY") {
+    router.replace("/sections/takeaway");
+  }
+}}      style={styles.backBtn}
+    >
+      <Text style={styles.backText}>Back</Text>
+    </Pressable>
+
+  </View>
+
+</View>
 
       {/* KITCHENS */}
       <View style={styles.kitchensContainer}>
@@ -410,7 +437,7 @@ export default function WesternKitchen() {
                   { width: width < 600 ? 80 : 100 },
                 ]}
                 onPress={() => {
-                  if (!isActive) router.push(k.route as any);
+                  if (!isActive) router.replace(k.route as any);
                 }}
               >
                 <View

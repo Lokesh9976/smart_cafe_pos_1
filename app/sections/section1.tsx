@@ -91,136 +91,117 @@ useEffect(() => {
 
   const numberFont = Math.max(18, Math.min(24, itemSize * 0.32));
   const smallFont = Math.max(10, Math.min(13, itemSize * 0.2));
-
+  
   const renderItem = ({ item }: { item: TableItem }) => {
-    const tables = getTables();
 
-const tableData = tables.find(
-  t => t.section === "SECTION_1" && t.tableNo === item.label
-);
+  const tables = getTables();
 
-let borderColor = "rgba(255, 255, 255, 0.43)";
-let textColor = "#ffffff";
-let bgColor = "rgba(255,255,255,0.08)";
-let timeText = "";
-let orderText = "";
+  const tableData = tables.find(
+    t => t.section === "SECTION_1" && t.tableNo === item.label
+  );
 
-if (tableData) {
+  let borderColor = "rgba(255,255,255,0.4)";
+  let textColor = "#ffffff";
+  let bgColor = "rgba(255,255,255,0.05)";
+  let timeText = "";
+  let orderText = "";
 
-  const minutes =
-    Math.floor((Date.now() - tableData.startTime) / 60000);
+  if (tableData) {
 
-  if (minutes >= 30) {
+    const minutes =
+      Math.floor((Date.now() - tableData.startTime) / 60000);
 
-  // 🔴 LATE ORDER
-  borderColor = "#ffffff";
-  bgColor = "rgba(246,8,8,0.85)";
-  textColor = "#ffffff";
+    if (minutes >= 30) {
 
-} else if (minutes >= 15) {
+      // 🔴 Late
+      borderColor = "rgba(255,255,255,0.7)";
+      bgColor = "rgba(255,0,0,0.25)";
+      textColor = "#ffffff";
 
-  // 🟠 WARNING
-  borderColor = "#ffffff";
-  bgColor = "rgba(255,165,0,0.85)";
-  textColor = "#ffffff";
+    } else if (minutes >= 15) {
 
-} else {
+      // 🟠 Warning
+      borderColor = "rgba(255,255,255,0.7)";
+      bgColor = "rgba(255,165,0,0.25)";
+      textColor = "#ffffff";
 
-  // 🟢 NORMAL HOLD
-  borderColor = "#ffffff";
-  bgColor = "rgba(65,225,16,0.85)";
-  textColor = "#ffffff";
+    } else {
 
-}
-  const time = new Date(tableData.startTime);
+      // 🟢 Active
+      borderColor = "rgba(255,255,255,0.7)";
+      bgColor = "rgba(0,255,0,0.25)";
+      textColor = "#ffffff";
 
-  const hours = time.getHours().toString().padStart(2,"0");
-  const mins = time.getMinutes().toString().padStart(2,"0");
+    }
 
-  timeText = `${hours}:${mins}`;
-  orderText = `#${tableData.orderId}`;
+    const time = new Date(tableData.startTime);
 
-}
+    const hours = time.getHours().toString().padStart(2,"0");
+    const mins = time.getMinutes().toString().padStart(2,"0");
 
-    const isActive = item.status === "active";
+    timeText = `${hours}:${mins}`;
+    orderText = `#${tableData.orderId}`;
 
-    return (
-      <TouchableOpacity
-        style={[
-          styles.tableBox,
-          {
-           width: itemSize,
-            height: itemSize,
-            borderColor: borderColor,
-            backgroundColor: bgColor,
-          },
-        ]}
-        activeOpacity={0.85}
-        onPress={() => {
-          setOrderContext({
-            orderType: "DINE_IN",
-            section: "SECTION_1",
-            tableNo: item.label,
-          });
+  }
 
-          router.push("/menu/thai_kitchen");
-        }}
-      >
-        <BlurView
-          intensity={isActive ? 45 : 35}
-          tint="dark"
-          style={styles.glassInner}
-        >
-          {item.status || tableData ? (
-            <View style={styles.tableContent}>
-              <Text
-                style={[
-                  styles.tableNumber,
-                  {
-                    fontSize: numberFont,
-                    color: textColor,
-                  },
-                ]}
-              >
-                {item.label}
+  return (
+    <TouchableOpacity
+      style={[
+        styles.tableBox,
+        {
+          width: itemSize,
+          height: itemSize,
+          borderColor: borderColor,
+          backgroundColor: bgColor,
+        },
+      ]}
+      activeOpacity={0.85}
+      onPress={() => {
+
+        setOrderContext({
+          orderType: "DINE_IN",
+          section: "SECTION_1",
+          tableNo: item.label,
+        });
+
+        router.replace("/menu/thai_kitchen");
+
+      }}
+    >
+
+      <BlurView intensity={70} tint="dark" style={styles.glassInner}>
+
+        <View style={styles.tableContent}>
+
+          <Text
+            style={[
+              styles.tableNumber,
+              { fontSize: numberFont, color: textColor }
+            ]}
+          >
+            {item.label}
+          </Text>
+
+          {tableData && (
+            <>
+              <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                {timeText}
               </Text>
 
-              {tableData && (
-               <>
-                    <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                      {timeText}
-                    </Text>
-
-                    <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                      {orderText}
-                    </Text>
-                  </>
-                )}
-              {item.order && (
-                <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                  {item.order}
-                </Text>
-              )}
-              {item.amount && (
-                <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                  {item.amount}
-                </Text>
-              )}
-            </View>
-          ) : (
-            <Text
-              style={[
-                styles.tableNumber,
-                { fontSize: numberFont, color: "#ffffff" },
-              ]}
-            >
-              {item.label}
-            </Text>
+              <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                {orderText}
+              </Text>
+            </>
           )}
-        </BlurView>
-      </TouchableOpacity>
-    );
-  };
+
+        </View>
+
+      </BlurView>
+
+    </TouchableOpacity>
+  );
+
+};
 
   return (
     <ImageBackground
@@ -235,9 +216,12 @@ if (tableData) {
 
         <Text style={styles.headerTitle}>SECTION 1</Text>
 
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>Back</Text>
-        </Pressable>
+        <Pressable
+      onPress={() => router.push("/(tabs)/category")}
+      style={styles.backBtn}
+    >
+      <Text style={styles.backText}>Back</Text>
+    </Pressable>
       </View>
 
       <FlatList
@@ -266,59 +250,72 @@ const styles = StyleSheet.create({
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: "rgba(5,5,8,0.75)",
   },
 
   /* ===== Top Bar ===== */
 
-  topBar: {
-    height: 60,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.08)",
-  },
+ topBar: {
+  height: 70,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  paddingHorizontal: 20,
+  backgroundColor: "rgba(10,10,15,0.95)",
 
-  backBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.12)",
-  },
+  borderBottomWidth: 1,
+  borderBottomColor: "rgba(255,215,0,0.25)",
 
-  backText: {
-    color: "#ffffff",
-    fontWeight: "700",
-    fontSize: 14,
-  },
+  shadowColor: "#000",
+  shadowOpacity: 0.6,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+},
 
-  headerTitle: {
-    color: "#d7ff9a",
-    fontSize: 20,
-    fontWeight: "900",
-    letterSpacing: 0.6,
-  },
+ backBtn: {
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  borderRadius: 12,
+
+  backgroundColor: "rgba(255,215,0,0.15)",
+  borderWidth: 1,
+  borderColor: "rgba(255,215,0,0.5)",
+},
+
+ backText: {
+  color: "#FFD700",
+  fontWeight: "800",
+  fontSize: 14,
+},
+
+ headerTitle: {
+  color: "#FFD700",
+  fontSize: 22,
+  fontWeight: "900",
+  letterSpacing: 1.5,
+
+  textShadowColor: "rgba(255,215,0,0.6)",
+  textShadowOffset: { width: 0, height: 0 },
+  textShadowRadius: 10,
+},
 
   /* ===== Table Card ===== */
 
-  tableBox: {
-    borderRadius: 16,
-    overflow: "hidden",
-    borderWidth: 1.4,
-    borderColor: "rgba(255,255,255,0.25)",
+ tableBox: {
+  borderRadius: 20,
+  overflow: "hidden",
+  borderWidth: 1.5,
+  borderColor: "rgba(255,215,0,0.35)",
 
-    backgroundColor: "rgba(255,255,255,0.07)",
+  backgroundColor: "rgba(20,20,30,0.6)",
 
-    shadowColor: "#000",
-    shadowOpacity: 0.45,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
+  shadowColor: "#FFD700",
+  shadowOpacity: 0.3,
+  shadowRadius: 15,
+  shadowOffset: { width: 0, height: 8 },
 
-    elevation: 8,
-  },
+  elevation: 10,
+},
 
   glassInner: {
     flex: 1,

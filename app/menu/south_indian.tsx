@@ -307,24 +307,51 @@ export default function SouthIndian() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0b0b0b" }}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
+     {/* HEADER */}
+<View style={styles.header}>
 
-        <Text style={styles.title}>SOUTH INDIAN</Text>
+  <Text style={styles.title}>SOUTH INDIAN</Text>
 
-        <Pressable onPress={() => router.push("/cart")} style={styles.cartBtn}>
-          <Text style={styles.cartText}>Cart</Text>
-          {totalItems > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{totalItems}</Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
 
+    {/* Cart Button */}
+    <Pressable
+      onPress={() => router.replace("/cart")}
+      style={styles.cartBtn}
+    >
+      <Text style={styles.cartText}>Cart</Text>
+
+      {totalItems > 0 && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{totalItems}</Text>
+        </View>
+      )}
+    </Pressable>
+
+    {/* Back Button */}
+    <Pressable
+      onPress={() => {
+  if (orderContext?.section === "SECTION_1") {
+    router.replace("/sections/section1");
+  } 
+  else if (orderContext?.section === "SECTION_2") {
+    router.replace("/sections/section2");
+  } 
+  else if (orderContext?.section === "SECTION_3") {
+    router.replace("/sections/section3");
+  } 
+  else if (orderContext?.orderType === "TAKEAWAY") {
+    router.replace("/sections/takeaway");
+  }
+}}
+      style={styles.backBtn}
+    >
+      <Text style={styles.backText}>Back</Text>
+    </Pressable>
+
+  </View>
+
+</View>
       {/* KITCHENS */}
       <View style={styles.kitchensContainer}>
         <ScrollView
@@ -345,7 +372,7 @@ export default function SouthIndian() {
                   { width: width < 600 ? 80 : 100 },
                 ]}
                 onPress={() => {
-                  if (!isActive) router.push(k.route as any);
+                  if (!isActive)router.replace(k.route as any);
                 }}
               >
                 <View
