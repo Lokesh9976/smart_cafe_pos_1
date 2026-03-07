@@ -1,6 +1,6 @@
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   FlatList,
   ImageBackground,
@@ -12,15 +12,25 @@ import {
   View,
 } from "react-native";
 import { setOrderContext } from "../orderContextStore";
-import { getTables } from "../tableStatusStore";
 
 type TableItem = {
   id: string;
   label: string;
+  status?: "busy" | "active" | "free";
+  time?: string;
+  order?: string;
+  amount?: string;
 };
 
 const TABLES: TableItem[] = [
-  { id: "1", label: "D21" },
+  {
+    id: "1",
+    label: "D21",
+    status: "active",
+    time: "17:24 PM",
+    order: "#1725",
+    amount: "$31.00",
+  },
   { id: "2", label: "D22" },
   { id: "3", label: "D23" },
   { id: "4", label: "D24" },
@@ -43,17 +53,6 @@ const TABLES: TableItem[] = [
 ];
 
 export default function Section3() {
-
-  const [, forceUpdate] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      forceUpdate(v => v + 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   const { width, height } = useWindowDimensions();
   const router = useRouter();
 
@@ -66,55 +65,11 @@ export default function Section3() {
   const itemSize =
     (width - SCREEN_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
 
-  const numberFont = Math.max(18, Math.min(24, itemSize * 0.32));
+  const numberFont = Math.max(14, Math.min(18, itemSize * 0.28));
   const smallFont = Math.max(10, Math.min(13, itemSize * 0.2));
 
   const renderItem = ({ item }: { item: TableItem }) => {
-
-    const tables = getTables();
-
-    const tableData = tables.find(
-      t => t.section === "SECTION_3" && t.tableNo === item.label
-    );
-
-    let borderColor = "rgba(255,255,255,0.4)";
-    let textColor = "#ffffff";
-    let bgColor = "rgba(255,255,255,0.05)";
-    let timeText = "";
-    let orderText = "";
-
-    if (tableData) {
-
-      const minutes =
-        Math.floor((Date.now() - tableData.startTime) / 60000);
-
-      if (minutes >= 30) {
-
-        borderColor = "rgba(255,255,255,0.7)";
-        bgColor = "rgba(255,0,0,0.25)";
-        textColor = "#ffffff";
-
-      } else if (minutes >= 15) {
-
-        borderColor = "rgba(255,255,255,0.7)";
-        bgColor = "rgba(255,165,0,0.25)";
-        textColor = "#ffffff";
-
-      } else {
-
-        borderColor = "rgba(255,255,255,0.7)";
-        bgColor = "rgba(0,255,0,0.25)";
-        textColor = "#ffffff";
-      }
-
-      const time = new Date(tableData.startTime);
-
-      const hours = time.getHours().toString().padStart(2,"0");
-      const mins = time.getMinutes().toString().padStart(2,"0");
-
-      timeText = `${hours}:${mins}`;
-      orderText = `#${tableData.orderId}`;
-    }
+    const isActive = item.status === "active";
 
     return (
       <TouchableOpacity
@@ -123,13 +78,13 @@ export default function Section3() {
           {
             width: itemSize,
             height: itemSize,
-            borderColor: borderColor,
-            backgroundColor: bgColor,
+            borderColor: isActive
+              ? "rgba(190,255,120,0.8)"
+              : "rgba(255,255,255,0.35)",
           },
         ]}
         activeOpacity={0.85}
         onPress={() => {
-
           setOrderContext({
             orderType: "DINE_IN",
             section: "SECTION_3",
@@ -137,39 +92,28 @@ export default function Section3() {
           });
 
           router.replace("/menu/thai_kitchen");
-
         }}
       >
+        <BlurView
+          intensity={isActive ? 45 : 35}
+          tint="dark"
+          style={styles.glassInner}
+        >
+          <Text
+            style={[
+              styles.tableNumber,
+              { fontSize: numberFont, color: isActive ? "#d7ff9a" : "#ffffff" },
+            ]}
+          >
+            {item.label}
+          </Text>
 
-        <BlurView intensity={70} tint="dark" style={styles.glassInner}>
-
-          <View style={styles.tableContent}>
-
-            <Text
-              style={[
-                styles.tableNumber,
-                { fontSize: numberFont, color: textColor }
-              ]}
-            >
-              {item.label}
+          {item.status && item.time && (
+            <Text style={[styles.smallText, { fontSize: smallFont }]}>
+              {item.time}
             </Text>
-
-            {tableData && (
-              <>
-                <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                  {timeText}
-                </Text>
-
-                <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                  {orderText}
-                </Text>
-              </>
-            )}
-
-          </View>
-
+          )}
         </BlurView>
-
       </TouchableOpacity>
     );
   };
@@ -180,28 +124,27 @@ export default function Section3() {
       style={styles.background}
       resizeMode="cover"
     >
-
       <View style={styles.overlay} />
 
+      {/* ===== Top Bar ===== */}
       <View style={styles.topBar}>
         <View style={{ width: 60 }} />
 
         <Text style={styles.headerTitle}>SECTION 3</Text>
 
-        <Pressable
-          onPress={() => router.push("/(tabs)/category")}
-          style={styles.backBtn}
-        >
-          <Text style={styles.backText}>Back</Text>
-        </Pressable>
-
+         <Pressable
+              onPress={() => router.push("/(tabs)/category")}
+              style={styles.backBtn}
+            >
+              <Text style={styles.backText}>Back</Text>
+            </Pressable>
       </View>
 
       <FlatList
         data={TABLES}
         key={numColumns}
         numColumns={numColumns}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(i) => i.id}
         renderItem={renderItem}
         columnWrapperStyle={{ gap: GAP }}
         contentContainerStyle={{
@@ -210,106 +153,74 @@ export default function Section3() {
           paddingBottom: 30,
         }}
       />
-
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
+  background: { flex: 1, width: "100%", height: "100%" },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(5,5,8,0.75)",
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
 
+  /* ===== Top Bar ===== */
   topBar: {
-    height: 70,
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    backgroundColor: "rgba(10,10,15,0.95)",
-
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,215,0,0.25)",
-
-    shadowColor: "#000",
-    shadowOpacity: 0.6,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(0,0,0,0.6)",
   },
 
   backBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-
-    backgroundColor: "rgba(255,215,0,0.15)",
-    borderWidth: 1,
-    borderColor: "rgba(255,215,0,0.5)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
 
   backText: {
-    color: "#FFD700",
-    fontWeight: "800",
+    color: "#ffffff",
+    fontWeight: "700",
     fontSize: 14,
   },
 
   headerTitle: {
-    color: "#FFD700",
-    fontSize: 22,
-    fontWeight: "900",
-    letterSpacing: 1.5,
-
-    textShadowColor: "rgba(255,215,0,0.6)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-
-  tableBox: {
-    borderRadius: 20,
-    overflow: "hidden",
-    borderWidth: 1.5,
-    borderColor: "rgba(255,215,0,0.35)",
-
-    backgroundColor: "rgba(20,20,30,0.6)",
-
-    shadowColor: "#FFD700",
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 8 },
-
-    elevation: 10,
-  },
-
-  glassInner: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 6,
-  },
-
-  tableContent: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  tableNumber: {
-    fontWeight: "900",
-    marginBottom: 4,
+    color: "#d7ff9a",
+    fontSize: 18,
+    fontWeight: "800",
     letterSpacing: 0.5,
   },
 
+  tableBox: {
+    borderRadius: 14,
+    overflow: "hidden",
+    borderWidth: 1.2,
+    shadowColor: "#00000000",
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+
+  glassInner: { flex: 1, justifyContent: "center", alignItems: "center" },
+
+  tableNumber: {
+    fontWeight: "900",
+    textShadowColor: "rgba(0,0,0,0.7)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    letterSpacing: 0.3,
+  },
+
   smallText: {
-    lineHeight: 15,
-    fontWeight: "600",
-    color: "#f0f0f0",
+    lineHeight: 14,
     opacity: 0.95,
+    fontWeight: "600",
+    color: "#eaeaea",
   },
 });

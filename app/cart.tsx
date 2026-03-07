@@ -51,8 +51,19 @@ export default function CartScreen() {
         resizeMode="cover"
       >
         <View style={styles.overlay}>
+
           {/* TOP BAR */}
           <View style={styles.topBar}>
+
+            {/* LEFT SIDE */}
+            <Pressable
+              style={styles.holdListBtn}
+              onPress={() => router.push("/heldOrders" as any)}
+            >
+              <Text style={styles.holdText}>Held Orders</Text>
+            </Pressable>
+
+            {/* RIGHT SIDE */}
             <View style={styles.topRightGroup}>
               <Pressable style={styles.back} onPress={() => router.back()}>
                 <Text style={styles.topBtnText}>Back</Text>
@@ -68,6 +79,7 @@ export default function CartScreen() {
                 <Text style={styles.topBtnText}>Clear Cart</Text>
               </Pressable>
             </View>
+
           </View>
 
           {/* ORDER HEADER */}
@@ -89,33 +101,15 @@ export default function CartScreen() {
           <FlatList
             data={cart}
             keyExtractor={(i, index) => i.id + index}
+            contentContainerStyle={{ paddingBottom: 20 }}
             ListEmptyComponent={
               <Text style={styles.emptyText}>Cart Empty</Text>
             }
             renderItem={({ item }) => (
               <View style={styles.row}>
-                <View style={{ flex: 1 }}>
+
+                <View style={styles.itemInfo}>
                   <Text style={styles.name}>{item.name}</Text>
-
-                  {item.spicy && item.spicy !== "Medium" && (
-                    <Text style={styles.sub}>Spicy: {item.spicy}</Text>
-                  )}
-
-                  {item.oil && item.oil !== "Normal" && (
-                    <Text style={styles.sub}>Oil: {item.oil}</Text>
-                  )}
-
-                  {item.salt && item.salt !== "Normal" && (
-                    <Text style={styles.sub}>Salt: {item.salt}</Text>
-                  )}
-
-                  {item.sugar && item.sugar !== "Normal" && (
-                    <Text style={styles.sub}>Sugar: {item.sugar}</Text>
-                  )}
-
-                  {item.note && (
-                    <Text style={styles.sub}>Note: {item.note}</Text>
-                  )}
 
                   <Text style={styles.qty}>Qty: {item.qty}</Text>
 
@@ -145,17 +139,10 @@ export default function CartScreen() {
                     <Text style={styles.btnText}>−</Text>
                   </Pressable>
                 </View>
+
               </View>
             )}
           />
-
-          {/* VIEW HELD ORDERS */}
-          <Pressable
-            style={styles.holdListBtn}
-            onPress={() => router.push("/heldOrders" as any)}
-          >
-            <Text style={styles.holdText}>View Held Orders</Text>
-          </Pressable>
 
           <View style={styles.divider} />
 
@@ -169,39 +156,41 @@ export default function CartScreen() {
 
           <View style={styles.divider} />
 
-        {/* HOLD ORDER */}
-<Pressable
-  style={styles.holdBtn}
-  onPress={() => {
+          {/* HOLD + PROCEED */}
+          <View style={styles.bottomButtons}>
 
-    const orderId = getNextOrderId();
+            <Pressable
+              style={styles.holdBtn}
+              onPress={() => {
 
-    holdOrder(cart, orderContext);
+                const orderId = getNextOrderId();
 
-    if (orderContext.orderType === "DINE_IN") {
-      setTableHold(
-        orderContext.section!,
-        orderContext.tableNo!,
-        orderId
-      );
-    }
+                holdOrder(cart, orderContext);
 
-    clearCart();
+                if (orderContext.orderType === "DINE_IN") {
+                  setTableHold(
+                    orderContext.section!,
+                    orderContext.tableNo!,
+                    orderId
+                  );
+                }
 
-    router.replace("/(tabs)/category");
+                clearCart();
+                router.replace("/(tabs)/category");
+              }}
+            >
+              <Text style={styles.holdText}>Hold Order</Text>
+            </Pressable>
 
-  }}
->
-  <Text style={styles.holdText}>Hold Order</Text>
-</Pressable>
+            <Pressable
+              style={styles.proceedBtn}
+              onPress={() => router.push("/summary" as any)}
+            >
+              <Text style={styles.proceedText}>Proceed</Text>
+            </Pressable>
 
-          {/* PROCEED */}
-          <Pressable
-            style={styles.proceedBtn}
-            onPress={() => router.push("/summary" as any)}
-          >
-            <Text style={styles.proceedText}>Proceed to Summary</Text>
-          </Pressable>
+          </View>
+
         </View>
       </ImageBackground>
     </View>
@@ -209,15 +198,18 @@ export default function CartScreen() {
 }
 
 const styles = StyleSheet.create({
+
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.6)",
     padding: 20,
   },
 
   topBar: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
   },
 
   topRightGroup: {
@@ -245,14 +237,14 @@ const styles = StyleSheet.create({
   },
 
   contextText: {
-    color: "#d7ff9a",
+    color: "#9ef01a",
     marginBottom: 8,
     fontWeight: "800",
   },
 
   title: {
     color: "#9ef01a",
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     marginVertical: 15,
   },
@@ -264,23 +256,23 @@ const styles = StyleSheet.create({
 
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.75)",
-    padding: 15,
+    justifyContent: "space-between",
+    backgroundColor: "rgba(0,0,0,0.9)",
+    paddingVertical: 16,
+    paddingHorizontal: 18,
     marginBottom: 12,
-    borderRadius: 12,
+    borderRadius: 14,
+  },
+
+  itemInfo: {
+    flex: 1,
   },
 
   name: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 16,
-  },
-
-  sub: {
-    color: "#ccc",
-    marginTop: 2,
+    fontSize: 18,
   },
 
   qty: {
@@ -291,30 +283,29 @@ const styles = StyleSheet.create({
 
   price: {
     color: "#fff",
+    fontWeight: "900",
     marginTop: 4,
-    fontWeight: "700",
   },
 
   actionRow: {
     flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
+    gap: 12,
   },
 
   plus: {
     backgroundColor: "#22c55e",
-    width: 45,
-    height: 45,
-    borderRadius: 10,
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
 
   minus: {
     backgroundColor: "#ef4444",
-    width: 45,
-    height: 45,
-    borderRadius: 10,
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -322,23 +313,22 @@ const styles = StyleSheet.create({
   btnText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: 20,
   },
 
   holdListBtn: {
     backgroundColor: "#f59e0b",
-    padding: 15,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
 
   holdBtn: {
+    flex: 1,
     backgroundColor: "#f59e0b",
-    padding: 15,
+    padding: 16,
     borderRadius: 12,
     alignItems: "center",
-    marginBottom: 10,
   },
 
   holdText: {
@@ -366,13 +356,19 @@ const styles = StyleSheet.create({
 
   summaryValue: {
     color: "#9ef01a",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "900",
   },
 
+  bottomButtons: {
+    flexDirection: "row",
+    gap: 12,
+  },
+
   proceedBtn: {
+    flex: 1,
     backgroundColor: "#22c55e",
-    padding: 15,
+    padding: 16,
     borderRadius: 12,
     alignItems: "center",
   },
@@ -382,4 +378,5 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     fontSize: 16,
   },
+
 });

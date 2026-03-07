@@ -16,10 +16,21 @@ import { setOrderContext } from "../orderContextStore";
 type TableItem = {
   id: string;
   label: string;
+  status?: "busy" | "active" | "free";
+  time?: string;
+  order?: string;
+  amount?: string;
 };
 
 const TABLES: TableItem[] = [
-  { id: "1", label: "T1" },
+  {
+    id: "1",
+    label: "T1",
+    status: "active",
+    time: "17:24 PM",
+    order: "#1725",
+    amount: "$31.00",
+  },
   { id: "2", label: "T2" },
   { id: "3", label: "T3" },
   { id: "4", label: "T4" },
@@ -29,7 +40,6 @@ const TABLES: TableItem[] = [
   { id: "8", label: "T8" },
   { id: "9", label: "T9" },
   { id: "10", label: "T10" },
-
   { id: "11", label: "T11" },
   { id: "12", label: "T12" },
   { id: "13", label: "T13" },
@@ -40,7 +50,6 @@ const TABLES: TableItem[] = [
   { id: "18", label: "T18" },
   { id: "19", label: "T19" },
   { id: "20", label: "T20" },
-
   { id: "21", label: "D1" },
   { id: "22", label: "D2" },
   { id: "23", label: "D3" },
@@ -51,7 +60,6 @@ const TABLES: TableItem[] = [
   { id: "28", label: "D8" },
   { id: "29", label: "D9" },
   { id: "30", label: "D10" },
-
   { id: "31", label: "D11" },
   { id: "32", label: "D12" },
   { id: "33", label: "D13" },
@@ -65,7 +73,6 @@ const TABLES: TableItem[] = [
 ];
 
 export default function Takeaway() {
-
   const { width, height } = useWindowDimensions();
   const router = useRouter();
 
@@ -78,9 +85,11 @@ export default function Takeaway() {
   const itemSize =
     (width - SCREEN_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
 
-  const numberFont = Math.max(18, Math.min(24, itemSize * 0.32));
+  const numberFont = Math.max(14, Math.min(18, itemSize * 0.28));
+  const smallFont = Math.max(10, Math.min(13, itemSize * 0.2));
 
   const renderItem = ({ item }: { item: TableItem }) => {
+    const isActive = item.status === "active";
 
     return (
       <TouchableOpacity
@@ -89,34 +98,67 @@ export default function Takeaway() {
           {
             width: itemSize,
             height: itemSize,
+            borderColor: isActive
+              ? "rgba(190,255,120,0.8)"
+              : "rgba(255,255,255,0.35)",
           },
         ]}
         activeOpacity={0.85}
         onPress={() => {
-
           setOrderContext({
             orderType: "TAKEAWAY",
             takeawayNo: item.label,
           });
 
           router.replace("/menu/thai_kitchen");
-
         }}
       >
+        <BlurView
+          intensity={isActive ? 45 : 35}
+          tint="dark"
+          style={styles.glassInner}
+        >
+          {item.status ? (
+            <View style={styles.tableContent}>
+              <Text
+                style={[
+                  styles.tableNumber,
+                  {
+                    fontSize: numberFont,
+                    color: isActive ? "#d7ff9a" : "#ffffff",
+                  },
+                ]}
+              >
+                {item.label}
+              </Text>
 
-        <BlurView intensity={70} tint="dark" style={styles.glassInner}>
-
-          <Text
-            style={[
-              styles.tableNumber,
-              { fontSize: numberFont }
-            ]}
-          >
-            {item.label}
-          </Text>
-
+              {item.time && (
+                <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                  {item.time}
+                </Text>
+              )}
+              {item.order && (
+                <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                  {item.order}
+                </Text>
+              )}
+              {item.amount && (
+                <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                  {item.amount}
+                </Text>
+              )}
+            </View>
+          ) : (
+            <Text
+              style={[
+                styles.tableNumber,
+                { fontSize: numberFont, color: "#ffffff" },
+              ]}
+            >
+              {item.label}
+            </Text>
+          )}
         </BlurView>
-
       </TouchableOpacity>
     );
   };
@@ -127,22 +169,20 @@ export default function Takeaway() {
       style={styles.background}
       resizeMode="cover"
     >
-
       <View style={styles.overlay} />
 
+      {/* ===== Top Bar ===== */}
       <View style={styles.topBar}>
-
         <View style={{ width: 60 }} />
 
         <Text style={styles.headerTitle}>TAKEAWAY</Text>
 
-        <Pressable
-          onPress={() => router.push("/(tabs)/category")}
-          style={styles.backBtn}
-        >
-          <Text style={styles.backText}>Back</Text>
-        </Pressable>
-
+         <Pressable
+              onPress={() => router.push("/(tabs)/category")}
+              style={styles.backBtn}
+            >
+              <Text style={styles.backText}>Back</Text>
+            </Pressable>
       </View>
 
       <FlatList
@@ -158,93 +198,77 @@ export default function Takeaway() {
           paddingBottom: 30,
         }}
       />
-
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
+  background: { flex: 1, width: "100%", height: "100%" },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(5,5,8,0.75)",
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
 
+  /* ===== Top Bar ===== */
   topBar: {
-    height: 70,
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    backgroundColor: "rgba(10,10,15,0.95)",
-
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,215,0,0.25)",
-
-    shadowColor: "#000",
-    shadowOpacity: 0.6,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(0,0,0,0.6)",
   },
 
   backBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-
-    backgroundColor: "rgba(255,215,0,0.15)",
-    borderWidth: 1,
-    borderColor: "rgba(255,215,0,0.5)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
 
   backText: {
-    color: "#FFD700",
-    fontWeight: "800",
+    color: "#ffffff",
+    fontWeight: "700",
     fontSize: 14,
   },
 
   headerTitle: {
-    color: "#FFD700",
-    fontSize: 22,
-    fontWeight: "900",
-    letterSpacing: 1.5,
-
-    textShadowColor: "rgba(255,215,0,0.6)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
+    color: "#d7ff9a",
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
 
   tableBox: {
-    borderRadius: 20,
+    borderRadius: 14,
     overflow: "hidden",
-    borderWidth: 1.5,
-    borderColor: "rgba(255,215,0,0.35)",
-
-    backgroundColor: "rgba(20,20,30,0.6)",
-
-    shadowColor: "#FFD700",
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 8 },
-
-    elevation: 10,
+    borderWidth: 1.2,
+    shadowColor: "#00000000",
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+    backgroundColor: "rgba(255,255,255,0.08)",
   },
 
-  glassInner: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  glassInner: { flex: 1, justifyContent: "center", alignItems: "center" },
+
+  tableContent: { alignItems: "center" },
 
   tableNumber: {
     fontWeight: "900",
-    color: "#ffffff",
-    letterSpacing: 0.5,
+    marginBottom: 2,
+    textShadowColor: "rgba(0,0,0,0.7)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    letterSpacing: 0.3,
+  },
+
+  smallText: {
+    lineHeight: 14,
+    opacity: 0.95,
+    fontWeight: "600",
+    color: "#eaeaea",
   },
 });

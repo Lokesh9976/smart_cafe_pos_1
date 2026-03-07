@@ -11,21 +11,18 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+
 import { setOrderContext } from "../orderContextStore";
 import { getTables } from "../tableStatusStore";
 
 type TableItem = {
   id: string;
   label: string;
-  status?: "busy" | "active" | "free";
-  time?: string;
-  order?: string;
-  amount?: string;
 };
 
 const TABLES: TableItem[] = [
-  { id: "1", label: "1",},
-  { id: "2", label: "2" }, 
+  { id: "1", label: "1" },
+  { id: "2", label: "2" },
   { id: "3", label: "3" },
   { id: "4", label: "4" },
   { id: "5", label: "5" },
@@ -67,15 +64,16 @@ const TABLES: TableItem[] = [
 ];
 
 export default function Section1() {
+
   const [, forceUpdate] = useState(0);
 
-useEffect(() => {
-  const timer = setInterval(() => {
-    forceUpdate(v => v + 1);
-  }, 1000);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      forceUpdate(v => v + 1);
+    }, 1000);
 
-  return () => clearInterval(timer);
-}, []);
+    return () => clearInterval(timer);
+  }, []);
 
   const { width, height } = useWindowDimensions();
   const router = useRouter();
@@ -89,139 +87,132 @@ useEffect(() => {
   const itemSize =
     (width - SCREEN_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
 
-  const numberFont = Math.max(18, Math.min(24, itemSize * 0.32));
+  const numberFont = Math.max(14, Math.min(18, itemSize * 0.28));
   const smallFont = Math.max(10, Math.min(13, itemSize * 0.2));
-  
+
   const renderItem = ({ item }: { item: TableItem }) => {
 
-  const tables = getTables();
+    const tables = getTables();
 
-  const tableData = tables.find(
-    t => t.section === "SECTION_1" && t.tableNo === item.label
-  );
+    const tableData = tables.find(
+      t => t.section === "SECTION_1" && t.tableNo === item.label
+    );
 
-  let borderColor = "rgba(255,255,255,0.4)";
-  let textColor = "#ffffff";
-  let bgColor = "rgba(255,255,255,0.05)";
-  let timeText = "";
-  let orderText = "";
+    let borderColor = "rgba(255,255,255,0.35)";
+    let textColor = "#ffffff";
+    let bgColor = "rgba(255,255,255,0.08)";
+    let timeText = "";
+    let orderText = "";
 
-  if (tableData) {
+    if (tableData) {
 
-    const minutes =
-      Math.floor((Date.now() - tableData.startTime) / 60000);
+      const minutes =
+        Math.floor((Date.now() - tableData.startTime) / 60000);
 
-    if (minutes >= 30) {
+      if (minutes >= 30) {
 
-      // 🔴 Late
-      borderColor = "rgba(255,255,255,0.7)";
-      bgColor = "rgba(255,0,0,0.25)";
-      textColor = "#ffffff";
+        bgColor = "rgba(255,0,0,0.25)";
 
-    } else if (minutes >= 15) {
+      } else if (minutes >= 15) {
 
-      // 🟠 Warning
-      borderColor = "rgba(255,255,255,0.7)";
-      bgColor = "rgba(255,165,0,0.25)";
-      textColor = "#ffffff";
+        bgColor = "rgba(255,165,0,0.25)";
 
-    } else {
+      } else {
 
-      // 🟢 Active
-      borderColor = "rgba(255,255,255,0.7)";
-      bgColor = "rgba(0,255,0,0.25)";
-      textColor = "#ffffff";
+        bgColor = "rgba(0,255,0,0.25)";
+      }
+
+      const time = new Date(tableData.startTime);
+
+      const hours = time.getHours().toString().padStart(2,"0");
+      const mins = time.getMinutes().toString().padStart(2,"0");
+
+      timeText = `${hours}:${mins}`;
+      orderText = `#${tableData.orderId}`;
 
     }
 
-    const time = new Date(tableData.startTime);
+    return (
+      <TouchableOpacity
+        style={[
+          styles.tableBox,
+          {
+            width: itemSize,
+            height: itemSize,
+            borderColor: borderColor,
+            backgroundColor: bgColor,
+          },
+        ]}
+        activeOpacity={0.85}
+        onPress={() => {
 
-    const hours = time.getHours().toString().padStart(2,"0");
-    const mins = time.getMinutes().toString().padStart(2,"0");
+          setOrderContext({
+            orderType: "DINE_IN",
+            section: "SECTION_1",
+            tableNo: item.label,
+          });
 
-    timeText = `${hours}:${mins}`;
-    orderText = `#${tableData.orderId}`;
+          router.replace("/menu/thai_kitchen");
 
-  }
+        }}
+      >
 
-  return (
-    <TouchableOpacity
-      style={[
-        styles.tableBox,
-        {
-          width: itemSize,
-          height: itemSize,
-          borderColor: borderColor,
-          backgroundColor: bgColor,
-        },
-      ]}
-      activeOpacity={0.85}
-      onPress={() => {
+        <BlurView intensity={35} tint="dark" style={styles.glassInner}>
 
-        setOrderContext({
-          orderType: "DINE_IN",
-          section: "SECTION_1",
-          tableNo: item.label,
-        });
+          <View style={styles.tableContent}>
 
-        router.replace("/menu/thai_kitchen");
+            <Text
+              style={[
+                styles.tableNumber,
+                { fontSize: numberFont, color: textColor }
+              ]}
+            >
+              {item.label}
+            </Text>
 
-      }}
-    >
+            {tableData && (
+              <>
+                <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                  {timeText}
+                </Text>
 
-      <BlurView intensity={70} tint="dark" style={styles.glassInner}>
+                <Text style={[styles.smallText, { fontSize: smallFont }]}>
+                  {orderText}
+                </Text>
+              </>
+            )}
 
-        <View style={styles.tableContent}>
+          </View>
 
-          <Text
-            style={[
-              styles.tableNumber,
-              { fontSize: numberFont, color: textColor }
-            ]}
-          >
-            {item.label}
-          </Text>
+        </BlurView>
 
-          {tableData && (
-            <>
-              <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                {timeText}
-              </Text>
+      </TouchableOpacity>
+    );
 
-              <Text style={[styles.smallText, { fontSize: smallFont }]}>
-                {orderText}
-              </Text>
-            </>
-          )}
-
-        </View>
-
-      </BlurView>
-
-    </TouchableOpacity>
-  );
-
-};
+  };
 
   return (
     <ImageBackground
-      source={require("../../assets/images/002.jpg")}
+      source={require("../../assets/images/11.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
+
       <View style={styles.overlay} />
 
       <View style={styles.topBar}>
+
         <View style={{ width: 60 }} />
 
         <Text style={styles.headerTitle}>SECTION 1</Text>
 
         <Pressable
-      onPress={() => router.push("/(tabs)/category")}
-      style={styles.backBtn}
-    >
-      <Text style={styles.backText}>Back</Text>
-    </Pressable>
+          onPress={() => router.push("/(tabs)/category")}
+          style={styles.backBtn}
+        >
+          <Text style={styles.backText}>Back</Text>
+        </Pressable>
+
       </View>
 
       <FlatList
@@ -230,119 +221,81 @@ useEffect(() => {
         numColumns={numColumns}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        columnWrapperStyle={{ gap: GAP }}
+        columnWrapperStyle={{ gap: 10 }}
         contentContainerStyle={{
-          gap: GAP,
-          padding: SCREEN_PADDING,
+          gap: 10,
+          padding: 20,
           paddingBottom: 30,
         }}
       />
+
     </ImageBackground>
   );
+
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
+
+  background: { flex: 1, width: "100%", height: "100%" },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(5,5,8,0.75)",
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
 
-  /* ===== Top Bar ===== */
+  topBar: {
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
 
- topBar: {
-  height: 70,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  paddingHorizontal: 20,
-  backgroundColor: "rgba(10,10,15,0.95)",
+  backBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
 
-  borderBottomWidth: 1,
-  borderBottomColor: "rgba(255,215,0,0.25)",
+  backText: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 14,
+  },
 
-  shadowColor: "#000",
-  shadowOpacity: 0.6,
-  shadowRadius: 12,
-  shadowOffset: { width: 0, height: 4 },
-},
+  headerTitle: {
+    color: "#d7ff9a",
+    fontSize: 18,
+    fontWeight: "800",
+  },
 
- backBtn: {
-  paddingHorizontal: 16,
-  paddingVertical: 8,
-  borderRadius: 12,
-
-  backgroundColor: "rgba(255,215,0,0.15)",
-  borderWidth: 1,
-  borderColor: "rgba(255,215,0,0.5)",
-},
-
- backText: {
-  color: "#FFD700",
-  fontWeight: "800",
-  fontSize: 14,
-},
-
- headerTitle: {
-  color: "#FFD700",
-  fontSize: 22,
-  fontWeight: "900",
-  letterSpacing: 1.5,
-
-  textShadowColor: "rgba(255,215,0,0.6)",
-  textShadowOffset: { width: 0, height: 0 },
-  textShadowRadius: 10,
-},
-
-  /* ===== Table Card ===== */
-
- tableBox: {
-  borderRadius: 20,
-  overflow: "hidden",
-  borderWidth: 1.5,
-  borderColor: "rgba(255,215,0,0.35)",
-
-  backgroundColor: "rgba(20,20,30,0.6)",
-
-  shadowColor: "#FFD700",
-  shadowOpacity: 0.3,
-  shadowRadius: 15,
-  shadowOffset: { width: 0, height: 8 },
-
-  elevation: 10,
-},
+  tableBox: {
+    borderRadius: 14,
+    overflow: "hidden",
+    borderWidth: 1.2,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
 
   glassInner: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 6,
   },
 
-  tableContent: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  tableContent: { alignItems: "center" },
 
   tableNumber: {
     fontWeight: "900",
-    marginBottom: 4,
-    letterSpacing: 0.5,
-
-    textShadowColor: "rgba(0,0,0,0.7)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 5,
+    marginBottom: 2,
   },
 
   smallText: {
-    lineHeight: 15,
-    fontWeight: "600",
-    color: "#f0f0f0",
+    lineHeight: 14,
     opacity: 0.95,
+    fontWeight: "600",
+    color: "#eaeaea",
   },
+
 });

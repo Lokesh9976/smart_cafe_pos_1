@@ -42,7 +42,7 @@ export default function Category() {
 
   return (
     <ImageBackground
-      source={require("../../assets/images/11.jpg")}
+      source={require("../../assets/images/003.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
@@ -75,7 +75,7 @@ export default function Category() {
               activeOpacity={0.85}
               onPress={() => handlePress(item)}
             >
-              <BlurView intensity={40} tint="dark" style={styles.glassBoxInner}>
+              <BlurView intensity={55} tint="dark" style={styles.glassBoxInner}>
                 <Text style={styles.boxText}>{item}</Text>
               </BlurView>
             </TouchableOpacity>
@@ -126,18 +126,14 @@ const styles = StyleSheet.create({
   },
 
   /* Category Box */
-  box: {
-    borderRadius: 18,
-    overflow: "hidden",
-    marginBottom: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
+ box: {
+  borderRadius: 20,
+  overflow: "hidden",
+  marginBottom: 14,
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.35)",
+  backgroundColor: "rgba(255,255,255,0.05)", // transparent glass
+},
 
   glassBoxInner: {
     flex: 1,
@@ -145,11 +141,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  boxText: {
-    color: "#ffffff",
-    fontSize: 20,
-    fontWeight: "800",
-  },
+    boxText: {
+      color: "#ffffff",
+      fontSize: 24,
+      fontWeight: "900",
+      letterSpacing: 0.6,
+    },
 
   /* Logout Button */
   logoutBtn: {
@@ -186,3 +183,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
