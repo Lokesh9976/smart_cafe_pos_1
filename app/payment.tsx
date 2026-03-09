@@ -1,6 +1,7 @@
-import { clearTable } from "./tableStatusStore";
-import { clearCart, getCart } from "./cartStore";
+import { closeActiveOrder, findActiveOrder } from "./activeOrdersStore";
+import { clearCart } from "./cartStore";
 import { clearOrderContext, getOrderContext } from "./orderContextStore";
+import { clearTable } from "./tableStatusStore";
 
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -19,8 +20,13 @@ import {
 export default function PaymentScreen() {
   const router = useRouter();
 
-  const cart = getCart();
-  const orderContext = getOrderContext();
+  const context = getOrderContext();
+  const activeOrder = context ? findActiveOrder(context) : undefined;
+
+  const cart = React.useMemo(
+    () => (activeOrder ? activeOrder.items : []),
+    [activeOrder],
+  );
 
   const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
@@ -28,7 +34,7 @@ export default function PaymentScreen() {
 
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + (item.price || 0) * item.qty, 0),
-    [cart]
+    [cart],
   );
 
   const gst = subtotal * 0.09;
@@ -38,23 +44,23 @@ export default function PaymentScreen() {
 
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [cashInput, setCashInput] = useState<string>("");
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   /* ================= GUARD ================= */
 
   useEffect(() => {
-    if (!orderContext || cart.length === 0) {
+    if (!context || cart.length === 0) {
       router.replace("/(tabs)/category" as any);
     }
-  }, [orderContext, cart.length, router]);
+  }, [context, cart.length, router]);
 
   /* ================= CASH LOGIC ================= */
 
   const paidAmount = parseFloat(cashInput) || 0;
 
   const change = paidAmount >= total ? paidAmount - total : 0;
-
   const remaining = paidAmount < total ? total - paidAmount : 0;
 
   const isCashValid = selectedMethod !== "CASH" || paidAmount >= total;
@@ -70,7 +76,6 @@ export default function PaymentScreen() {
 
   const handleConfirm = () => {
     if (!selectedMethod) return;
-
     if (selectedMethod === "CASH" && paidAmount < total) return;
 
     setIsProcessing(true);
@@ -79,9 +84,16 @@ export default function PaymentScreen() {
       setIsProcessing(false);
       setIsSuccess(true);
 
-      // ✅ CLEAR TABLE STATUS
-      if (orderContext?.orderType === "DINE_IN") {
-        clearTable(orderContext.section!, orderContext.tableNo!);
+      /* CLOSE ACTIVE ORDER */
+
+      if (activeOrder) {
+        closeActiveOrder(activeOrder.orderId);
+      }
+
+      /* FREE TABLE */
+
+      if (context?.orderType === "DINE_IN") {
+        clearTable(context.section!, context.tableNo!);
       }
 
       setTimeout(() => {
@@ -89,11 +101,11 @@ export default function PaymentScreen() {
         clearOrderContext();
 
         router.replace("/(tabs)/category" as any);
-      }, 4000);
-    }, 2500);
+      }, 3000);
+    }, 2000);
   };
 
-  /* ================= RENDER ================= */
+  /* ================= UI ================= */
 
   return (
     <View style={{ flex: 1 }}>
@@ -104,6 +116,7 @@ export default function PaymentScreen() {
       >
         <View style={styles.overlay}>
           {/* SUCCESS SCREEN */}
+
           {isSuccess && (
             <View style={styles.centerBox}>
               <Text style={styles.successText}>✅ PAYMENT SUCCESSFUL</Text>
@@ -112,6 +125,7 @@ export default function PaymentScreen() {
           )}
 
           {/* PROCESSING SCREEN */}
+
           {isProcessing && (
             <View style={styles.centerBox}>
               <ActivityIndicator size="large" color="#22c55e" />
@@ -122,16 +136,16 @@ export default function PaymentScreen() {
           {!isProcessing && !isSuccess && (
             <>
               {/* ORDER CONTEXT */}
-              {orderContext?.orderType === "DINE_IN" && (
+
+              {context?.orderType === "DINE_IN" && (
                 <Text style={styles.contextText}>
-                  DINE-IN | {orderContext.section} | Table{" "}
-                  {orderContext.tableNo}
+                  DINE-IN | {context.section} | Table {context.tableNo}
                 </Text>
               )}
 
-              {orderContext?.orderType === "TAKEAWAY" && (
+              {context?.orderType === "TAKEAWAY" && (
                 <Text style={styles.contextText}>
-                  TAKEAWAY | Order {orderContext.takeawayNo}
+                  TAKEAWAY | Order {context.takeawayNo}
                 </Text>
               )}
 
@@ -140,6 +154,7 @@ export default function PaymentScreen() {
               </Text>
 
               {/* PAYMENT METHODS */}
+
               <View style={styles.methodRow}>
                 {["CASH", "NETS", "PAYNOW", "CARD"].map((method) => (
                   <Pressable
@@ -155,7 +170,8 @@ export default function PaymentScreen() {
                 ))}
               </View>
 
-              {/* CASH SECTION */}
+              {/* CASH PAYMENT */}
+
               {selectedMethod === "CASH" && (
                 <View style={styles.cashBox}>
                   <Text style={styles.label}>Customer Pays</Text>
@@ -170,6 +186,7 @@ export default function PaymentScreen() {
                   />
 
                   {/* Tender Buttons */}
+
                   <View style={styles.tenderRow}>
                     {tenderOptions.map((amount) => (
                       <Pressable
@@ -198,6 +215,7 @@ export default function PaymentScreen() {
               )}
 
               {/* CONFIRM BUTTON */}
+
               <Pressable
                 style={[
                   styles.confirmBtn,

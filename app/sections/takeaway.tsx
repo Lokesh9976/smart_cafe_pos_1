@@ -11,7 +11,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { setOrderContext } from "../orderContextStore";
+import { findActiveOrder, loadActiveOrderToCart } from "../activeOrdersStore";
+import { setOrderContext, type OrderContext } from "../orderContextStore";
 
 type TableItem = {
   id: string;
@@ -105,10 +106,18 @@ export default function Takeaway() {
         ]}
         activeOpacity={0.85}
         onPress={() => {
-          setOrderContext({
+          const context: OrderContext = {
             orderType: "TAKEAWAY",
             takeawayNo: item.label,
-          });
+          };
+
+          setOrderContext(context);
+
+          const activeOrder = findActiveOrder(context);
+
+          if (activeOrder) {
+            loadActiveOrderToCart(activeOrder.orderId);
+          }
 
           router.replace("/menu/thai_kitchen");
         }}
@@ -177,12 +186,12 @@ export default function Takeaway() {
 
         <Text style={styles.headerTitle}>TAKEAWAY</Text>
 
-         <Pressable
-              onPress={() => router.push("/(tabs)/category")}
-              style={styles.backBtn}
-            >
-              <Text style={styles.backText}>Back</Text>
-            </Pressable>
+        <Pressable
+          onPress={() => router.push("/(tabs)/category")}
+          style={styles.backBtn}
+        >
+          <Text style={styles.backText}>Back</Text>
+        </Pressable>
       </View>
 
       <FlatList

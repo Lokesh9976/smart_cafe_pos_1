@@ -5,6 +5,7 @@ import { getOrderContext } from "../orderContextStore";
 
 import {
   FlatList,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -14,7 +15,6 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
-  Image,
 } from "react-native";
 
 /* ================= KITCHENS ================= */
@@ -197,139 +197,138 @@ const ITEMS_BY_GROUP: Record<string, DrinkItem[]> = {
 };
 
 const FOOD_IMAGES: Record<string, any> = {
+  /* ================= SMOOTHIES ================= */
+  sm_1: require("../../assets/images/drinks/Smoothies/Apple Smoothies.jpg"),
+  sm_2: require("../../assets/images/drinks/Smoothies/Pineapple Smoothies.jpg"),
+  sm_3: require("../../assets/images/drinks/Smoothies/Kiwi Smoothies.jpg"),
+  sm_4: require("../../assets/images/drinks/Smoothies/Orange Smoothies.jpg"),
+  sm_5: require("../../assets/images/drinks/Smoothies/Rambutaan Smoothies.jpg"),
+  sm_6: require("../../assets/images/drinks/Smoothies/Lychee Smoothies.jpg"),
+  sm_7: require("../../assets/images/drinks/Smoothies/Longan Smoothies.jpg"),
+  sm_8: require("../../assets/images/drinks/Smoothies/Blue Lime Smoothies.jpg"),
+  sm_9: require("../../assets/images/drinks/Smoothies/Sour Soup Smoothies.jpg"),
 
-/* ================= SMOOTHIES ================= */
-sm_1: require("../../assets/images/drinks/Smoothies/Apple Smoothies.jpg"),
-sm_2: require("../../assets/images/drinks/Smoothies/Pineapple Smoothies.jpg"),
-sm_3: require("../../assets/images/drinks/Smoothies/Kiwi Smoothies.jpg"),
-sm_4: require("../../assets/images/drinks/Smoothies/Orange Smoothies.jpg"),
-sm_5: require("../../assets/images/drinks/Smoothies/Rambutaan Smoothies.jpg"),
-sm_6: require("../../assets/images/drinks/Smoothies/Lychee Smoothies.jpg"),
-sm_7: require("../../assets/images/drinks/Smoothies/Longan Smoothies.jpg"),
-sm_8: require("../../assets/images/drinks/Smoothies/Blue Lime Smoothies.jpg"),
-sm_9: require("../../assets/images/drinks/Smoothies/Sour Soup Smoothies.jpg"),
+  /* ================= LOCAL FAVOURITE ================= */
+  lf_1: require("../../assets/images/drinks/Local Favourite/Milo Dinosaur.jpg"),
+  lf_2: require("../../assets/images/drinks/Local Favourite/Milo Godzilla.jpg"),
+  lf_3: require("../../assets/images/drinks/Local Favourite/RootBeer Float.jpg"),
+  lf_4: require("../../assets/images/drinks/Local Favourite/To Ice Longan.jpg"),
+  lf_5: require("../../assets/images/drinks/Local Favourite/To Ice Lychee.jpg"),
+  lf_6: require("../../assets/images/drinks/Local Favourite/BlueBerry Ice Lychee.jpg"),
+  lf_7: require("../../assets/images/drinks/Local Favourite/BlueBerry Ice Lychee.jpg"),
+  lf_8: require("../../assets/images/drinks/Local Favourite/Syrup Ice Longan.jpg"),
+  lf_9: require("../../assets/images/drinks/Local Favourite/Syrup Ice Lychee.jpg"),
+  lf_10: require("../../assets/images/drinks/Local Favourite/Lime sour plum.jpg"),
+  lf_11: require("../../assets/images/drinks/Local Favourite/Super Cooler.jpg"),
+  lf_12: require("../../assets/images/drinks/Local Favourite/TOA Honey.jpg"),
+  lf_13: require("../../assets/images/drinks/Local Favourite/Chendol.jpg"),
+  lf_14: require("../../assets/images/drinks/Local Favourite/ABC.jpg"),
+  lf_15: require("../../assets/images/drinks/Local Favourite/Air Khatira.jpg"),
+  lf_16: require("../../assets/images/drinks/Local Favourite/Khatira 10.jpg"),
 
-/* ================= LOCAL FAVOURITE ================= */
-lf_1: require("../../assets/images/drinks/Local Favourite/Milo Dinosaur.jpg"),
-lf_2: require("../../assets/images/drinks/Local Favourite/Milo Godzilla.jpg"),
-lf_3: require("../../assets/images/drinks/Local Favourite/RootBeer Float.jpg"),
-lf_4: require("../../assets/images/drinks/Local Favourite/To Ice Longan.jpg"),
-lf_5: require("../../assets/images/drinks/Local Favourite/To Ice Lychee.jpg"),
-lf_6: require("../../assets/images/drinks/Local Favourite/BlueBerry Ice Lychee.jpg"),
-lf_7: require("../../assets/images/drinks/Local Favourite/BlueBerry Ice Lychee.jpg"),
-lf_8: require("../../assets/images/drinks/Local Favourite/Syrup Ice Longan.jpg"),
-lf_9: require("../../assets/images/drinks/Local Favourite/Syrup Ice Lychee.jpg"),
-lf_10: require("../../assets/images/drinks/Local Favourite/Lime sour plum.jpg"),
-lf_11: require("../../assets/images/drinks/Local Favourite/Super Cooler.jpg"),
-lf_12: require("../../assets/images/drinks/Local Favourite/TOA Honey.jpg"),
-lf_13: require("../../assets/images/drinks/Local Favourite/Chendol.jpg"),
-lf_14: require("../../assets/images/drinks/Local Favourite/ABC.jpg"),
-lf_15: require("../../assets/images/drinks/Local Favourite/Air Khatira.jpg"),
-lf_16: require("../../assets/images/drinks/Local Favourite/Khatira 10.jpg"),
+  /* ================= LASSI ================= */
+  ls_1: require("../../assets/images/drinks/Lassi/Lassi.jpg"),
+  ls_2: require("../../assets/images/drinks/Lassi/Mango Lassi.jpg"),
+  ls_3: require("../../assets/images/drinks/Lassi/Strawberry Lassi.jpg"),
+  ls_4: require("../../assets/images/drinks/Lassi/Black Currant Lassi.jpg"),
 
-/* ================= LASSI ================= */
-ls_1: require("../../assets/images/drinks/Lassi/Lassi.jpg"),
-ls_2: require("../../assets/images/drinks/Lassi/Mango Lassi.jpg"),
-ls_3: require("../../assets/images/drinks/Lassi/Strawberry Lassi.jpg"),
-ls_4: require("../../assets/images/drinks/Lassi/Black Currant Lassi.jpg"),
+  /* ================= MILK SHAKE ================= */
+  ms_1: require("../../assets/images/drinks/Milk Shake/Banana Shake.jpg"),
+  ms_2: require("../../assets/images/drinks/Milk Shake/Sweet Corn Shake.jpg"),
+  ms_3: require("../../assets/images/drinks/Milk Shake/Strawberry Shake.jpg"),
+  ms_4: require("../../assets/images/drinks/Milk Shake/Choclate Shake.jpg"),
+  ms_5: require("../../assets/images/drinks/Milk Shake/Vanila Shake.jpg"),
+  ms_6: require("../../assets/images/drinks/Milk Shake/Kiwi Shake.jpg"),
+  ms_7: require("../../assets/images/drinks/Milk Shake/Apple Shake.jpg"),
+  ms_8: require("../../assets/images/drinks/Milk Shake/Mango Shake.jpg"),
+  ms_9: require("../../assets/images/drinks/Milk Shake/Orange Shake.jpg"),
+  ms_10: require("../../assets/images/drinks/Milk Shake/Yam Shake.jpg"),
+  ms_11: require("../../assets/images/drinks/Milk Shake/Mocca Shake.jpg"),
+  ms_12: require("../../assets/images/drinks/Milk Shake/Latte Shake.jpg"),
+  ms_13: require("../../assets/images/drinks/Milk Shake/Oreo Shake.jpg"),
+  ms_14: require("../../assets/images/drinks/Milk Shake/Avacado Shake.jpg"),
+  ms_15: require("../../assets/images/drinks/Milk Shake/Durian Shake.jpg"),
+  ms_16: require("../../assets/images/drinks/Milk Shake/Cookie Shake.jpg"),
+  ms_17: require("../../assets/images/drinks/Milk Shake/Dates Shake.jpg"),
+  ms_18: require("../../assets/images/drinks/Milk Shake/Coconut Shake.jpg"),
 
-/* ================= MILK SHAKE ================= */
-ms_1: require("../../assets/images/drinks/Milk Shake/Banana Shake.jpg"),
-ms_2: require("../../assets/images/drinks/Milk Shake/Sweet Corn Shake.jpg"),
-ms_3: require("../../assets/images/drinks/Milk Shake/Strawberry Shake.jpg"),
-ms_4: require("../../assets/images/drinks/Milk Shake/Choclate Shake.jpg"),
-ms_5: require("../../assets/images/drinks/Milk Shake/Vanila Shake.jpg"),
-ms_6: require("../../assets/images/drinks/Milk Shake/Kiwi Shake.jpg"),
-ms_7: require("../../assets/images/drinks/Milk Shake/Apple Shake.jpg"),
-ms_8: require("../../assets/images/drinks/Milk Shake/Mango Shake.jpg"),
-ms_9: require("../../assets/images/drinks/Milk Shake/Orange Shake.jpg"),
-ms_10: require("../../assets/images/drinks/Milk Shake/Yam Shake.jpg"),
-ms_11: require("../../assets/images/drinks/Milk Shake/Mocca Shake.jpg"),
-ms_12: require("../../assets/images/drinks/Milk Shake/Latte Shake.jpg"),
-ms_13: require("../../assets/images/drinks/Milk Shake/Oreo Shake.jpg"),
-ms_14: require("../../assets/images/drinks/Milk Shake/Avacado Shake.jpg"),
-ms_15: require("../../assets/images/drinks/Milk Shake/Durian Shake.jpg"),
-ms_16: require("../../assets/images/drinks/Milk Shake/Cookie Shake.jpg"),
-ms_17: require("../../assets/images/drinks/Milk Shake/Dates Shake.jpg"),
-ms_18: require("../../assets/images/drinks/Milk Shake/Coconut Shake.jpg"),
+  /* ================= HOT BEVERAGES ================= */
+  hb_1: require("../../assets/images/drinks/Hot Beverages/Tea.jpg"),
+  hb_2: require("../../assets/images/drinks/Hot Beverages/Coffee.jpg"),
+  hb_3: require("../../assets/images/drinks/Hot Beverages/Nescafe.jpg"),
+  hb_4: require("../../assets/images/drinks/Hot Beverages/Milo.jpg"),
+  hb_5: require("../../assets/images/drinks/Hot Beverages/Horlicks.jpg"),
+  hb_6: require("../../assets/images/drinks/Hot Beverages/Hot Choclate.jpg"),
+  hb_7: require("../../assets/images/drinks/Hot Beverages/Tea O.jpg"),
+  hb_8: require("../../assets/images/drinks/Hot Beverages/Coffee O.jpg"),
+  hb_9: require("../../assets/images/drinks/Hot Beverages/Ginger Tea.jpg"),
+  hb_10: require("../../assets/images/drinks/Hot Beverages/Green Lime.jpg"),
+  hb_11: require("../../assets/images/drinks/Hot Beverages/Tea O Lime.jpg"),
+  hb_12: require("../../assets/images/drinks/Hot Beverages/Haila O panas.jpg"),
+  hb_13: require("../../assets/images/drinks/Hot Beverages/Susu Halia.jpg"),
+  hb_14: require("../../assets/images/drinks/Hot Beverages/Masala Tea.jpg"),
+  hb_15: require("../../assets/images/drinks/Hot Beverages/Tea Chino.jpg"),
+  hb_16: require("../../assets/images/drinks/Hot Beverages/Coffee Chino.jpg"),
+  hb_17: require("../../assets/images/drinks/Hot Beverages/TO halia.jpg"),
+  hb_18: require("../../assets/images/drinks/Hot Beverages/Tea C.jpg"),
+  hb_19: require("../../assets/images/drinks/Hot Beverages/Rose Syrup Lime.jpg"),
+  hb_20: require("../../assets/images/drinks/Hot Beverages/Honey Lemon.jpg"),
+  hb_21: require("../../assets/images/drinks/Hot Beverages/Nes lo Panas.jpg"),
 
-/* ================= HOT BEVERAGES ================= */
-hb_1: require("../../assets/images/drinks/Hot Beverages/Tea.jpg"),
-hb_2: require("../../assets/images/drinks/Hot Beverages/Coffee.jpg"),
-hb_3: require("../../assets/images/drinks/Hot Beverages/Nescafe.jpg"),
-hb_4: require("../../assets/images/drinks/Hot Beverages/Milo.jpg"),
-hb_5: require("../../assets/images/drinks/Hot Beverages/Horlicks.jpg"),
-hb_6: require("../../assets/images/drinks/Hot Beverages/Hot Choclate.jpg"),
-hb_7: require("../../assets/images/drinks/Hot Beverages/Tea O.jpg"),
-hb_8: require("../../assets/images/drinks/Hot Beverages/Coffee O.jpg"),
-hb_9: require("../../assets/images/drinks/Hot Beverages/Ginger Tea.jpg"),
-hb_10: require("../../assets/images/drinks/Hot Beverages/Green Lime.jpg"),
-hb_11: require("../../assets/images/drinks/Hot Beverages/Tea O Lime.jpg"),
-hb_12: require("../../assets/images/drinks/Hot Beverages/Haila O panas.jpg"),
-hb_13: require("../../assets/images/drinks/Hot Beverages/Susu Halia.jpg"),
-hb_14: require("../../assets/images/drinks/Hot Beverages/Masala Tea.jpg"),
-hb_15: require("../../assets/images/drinks/Hot Beverages/Tea Chino.jpg"),
-hb_16: require("../../assets/images/drinks/Hot Beverages/Coffee Chino.jpg"),
-hb_17: require("../../assets/images/drinks/Hot Beverages/TO halia.jpg"),
-hb_18: require("../../assets/images/drinks/Hot Beverages/Tea C.jpg"),
-hb_19: require("../../assets/images/drinks/Hot Beverages/Rose Syrup Lime.jpg"),
-hb_20: require("../../assets/images/drinks/Hot Beverages/Honey Lemon.jpg"),
-hb_21: require("../../assets/images/drinks/Hot Beverages/Nes lo Panas.jpg"),
+  /* ================= ICE CREAM ================= */
+  ic_1: require("../../assets/images/drinks/Ice Cream/Banana Split.jpg"),
+  ic_2: require("../../assets/images/drinks/Ice Cream/Mix Ice Cream.jpg"),
+  ic_3: require("../../assets/images/drinks/Ice Cream/2 Scoop IceCream.jpg"),
+  ic_4: require("../../assets/images/drinks/Ice Cream/Single scoop ice cream.jpg"),
+  ic_5: require("../../assets/images/drinks/Ice Cream/Malay Dessert.jpg"),
 
-/* ================= ICE CREAM ================= */
-ic_1: require("../../assets/images/drinks/Ice Cream/Banana Split.jpg"),
-ic_2: require("../../assets/images/drinks/Ice Cream/Mix Ice Cream.jpg"),
-ic_3: require("../../assets/images/drinks/Ice Cream/2 Scoop IceCream.jpg"),
-ic_4: require("../../assets/images/drinks/Ice Cream/Single scoop ice cream.jpg"),
-ic_5: require("../../assets/images/drinks/Ice Cream/Malay Dessert.jpg"),
+  /* ================= COLD BEVERAGES ================= */
+  cb_1: require("../../assets/images/drinks/Cold Beverages/Tea Ice.jpg"),
+  cb_2: require("../../assets/images/drinks/Cold Beverages/Coffee Ice.jpg"),
+  cb_3: require("../../assets/images/drinks/Cold Beverages/Nescafe Ice.jpg"),
+  cb_4: require("../../assets/images/drinks/Cold Beverages/Milo Ice.jpg"),
+  cb_5: require("../../assets/images/drinks/Cold Beverages/Bandung Ice.jpg"),
+  cb_6: require("../../assets/images/drinks/Cold Beverages/Horlicks Ice.jpg"),
+  cb_7: require("../../assets/images/drinks/Cold Beverages/Choclate Ice.jpg"),
+  cb_8: require("../../assets/images/drinks/Cold Beverages/Tea O Ice.jpg"),
+  cb_9: require("../../assets/images/drinks/Cold Beverages/Coffee Chino Ice.jpg"),
+  cb_10: require("../../assets/images/drinks/Cold Beverages/Tea O Lime Ice.jpg"),
+  cb_11: require("../../assets/images/drinks/Cold Beverages/Tea Chino Ice.jpg"),
+  cb_12: require("../../assets/images/drinks/Cold Beverages/Coffee Chino Ice.jpg"),
+  cb_13: require("../../assets/images/drinks/Cold Beverages/Soft Drinks.jpg"),
+  cb_14: require("../../assets/images/drinks/Cold Beverages/Mineral Water.jpg"),
+  cb_15: require("../../assets/images/drinks/Cold Beverages/Water.jpg"),
+  cb_16: require("../../assets/images/drinks/Cold Beverages/Syrup Lime Ice.jpg"),
+  cb_17: require("../../assets/images/drinks/Cold Beverages/Ginger Tea Ice.jpg"),
+  cb_18: require("../../assets/images/drinks/Cold Beverages/Mes Lo Ice.jpg"),
+  cb_19: require("../../assets/images/drinks/Cold Beverages/Limau ice.jpg"),
+  cb_20: require("../../assets/images/drinks/Cold Beverages/Haila O Ice.jpg"),
+  cb_21: require("../../assets/images/drinks/Cold Beverages/Honey Lemon Ice.jpg"),
+  cb_22: require("../../assets/images/drinks/Cold Beverages/Syrup Ice.jpg"),
+  cb_23: require("../../assets/images/drinks/Cold Beverages/Blueberry Ice.jpg"),
 
-/* ================= COLD BEVERAGES ================= */
-cb_1: require("../../assets/images/drinks/Cold Beverages/Tea Ice.jpg"),
-cb_2: require("../../assets/images/drinks/Cold Beverages/Coffee Ice.jpg"),
-cb_3: require("../../assets/images/drinks/Cold Beverages/Nescafe Ice.jpg"),
-cb_4: require("../../assets/images/drinks/Cold Beverages/Milo Ice.jpg"),
-cb_5: require("../../assets/images/drinks/Cold Beverages/Bandung Ice.jpg"),
-cb_6: require("../../assets/images/drinks/Cold Beverages/Horlicks Ice.jpg"),
-cb_7: require("../../assets/images/drinks/Cold Beverages/Choclate Ice.jpg"),
-cb_8: require("../../assets/images/drinks/Cold Beverages/Tea O Ice.jpg"),
-cb_9: require("../../assets/images/drinks/Cold Beverages/Coffee Chino Ice.jpg"),
-cb_10: require("../../assets/images/drinks/Cold Beverages/Tea O Lime Ice.jpg"),
-cb_11: require("../../assets/images/drinks/Cold Beverages/Tea Chino Ice.jpg"),
-cb_12: require("../../assets/images/drinks/Cold Beverages/Coffee Chino Ice.jpg"),
-cb_13: require("../../assets/images/drinks/Cold Beverages/Soft Drinks.jpg"),
-cb_14: require("../../assets/images/drinks/Cold Beverages/Mineral Water.jpg"),
-cb_15: require("../../assets/images/drinks/Cold Beverages/Water.jpg"),
-cb_16: require("../../assets/images/drinks/Cold Beverages/Syrup Lime Ice.jpg"),
-cb_17: require("../../assets/images/drinks/Cold Beverages/Ginger Tea Ice.jpg"),
-cb_18: require("../../assets/images/drinks/Cold Beverages/Mes Lo Ice.jpg"),
-cb_19: require("../../assets/images/drinks/Cold Beverages/Limau ice.jpg"),
-cb_20: require("../../assets/images/drinks/Cold Beverages/Haila O Ice.jpg"),
-cb_21: require("../../assets/images/drinks/Cold Beverages/Honey Lemon Ice.jpg"),
-cb_22: require("../../assets/images/drinks/Cold Beverages/Syrup Ice.jpg"),
-cb_23: require("../../assets/images/drinks/Cold Beverages/Blueberry Ice.jpg"),
+  /* ================= FRUIT JUICES ================= */
+  fj_1: require("../../assets/images/drinks/Fruit Juices/Orange Juice.jpg"),
+  fj_2: require("../../assets/images/drinks/Fruit Juices/Apple Juice.jpg"),
+  fj_3: require("../../assets/images/drinks/Fruit Juices/Pineapple Juice.jpg"),
+  fj_4: require("../../assets/images/drinks/Fruit Juices/Watermelon Juice.jpg"),
+  fj_5: require("../../assets/images/drinks/Fruit Juices/Star Fruit Juice.jpg"),
+  fj_6: require("../../assets/images/drinks/Fruit Juices/HoneyDew Juice.jpg"),
+  fj_7: require("../../assets/images/drinks/Fruit Juices/Longan Juice.jpg"),
+  fj_8: require("../../assets/images/drinks/Fruit Juices/Lychee Juice.jpg"),
+  fj_9: require("../../assets/images/drinks/Fruit Juices/Rambutan Juice.jpg"),
+  fj_10: require("../../assets/images/drinks/Fruit Juices/Carrot Juice.jpg"),
+  fj_11: require("../../assets/images/drinks/Fruit Juices/Celery Juice.jpg"),
+  fj_12: require("../../assets/images/drinks/Fruit Juices/Lime Juice.jpg"),
+  fj_13: require("../../assets/images/drinks/Fruit Juices/Fresh Coconut.jpg"),
+  fj_14: require("../../assets/images/drinks/Fruit Juices/Mix Fruit Juice.jpg"),
 
-/* ================= FRUIT JUICES ================= */
-fj_1: require("../../assets/images/drinks/Fruit Juices/Orange Juice.jpg"),
-fj_2: require("../../assets/images/drinks/Fruit Juices/Apple Juice.jpg"),
-fj_3: require("../../assets/images/drinks/Fruit Juices/Pineapple Juice.jpg"),
-fj_4: require("../../assets/images/drinks/Fruit Juices/Watermelon Juice.jpg"),
-fj_5: require("../../assets/images/drinks/Fruit Juices/Star Fruit Juice.jpg"),
-fj_6: require("../../assets/images/drinks/Fruit Juices/HoneyDew Juice.jpg"),
-fj_7: require("../../assets/images/drinks/Fruit Juices/Longan Juice.jpg"),
-fj_8: require("../../assets/images/drinks/Fruit Juices/Lychee Juice.jpg"),
-fj_9: require("../../assets/images/drinks/Fruit Juices/Rambutan Juice.jpg"),
-fj_10: require("../../assets/images/drinks/Fruit Juices/Carrot Juice.jpg"),
-fj_11: require("../../assets/images/drinks/Fruit Juices/Celery Juice.jpg"),
-fj_12: require("../../assets/images/drinks/Fruit Juices/Lime Juice.jpg"),
-fj_13: require("../../assets/images/drinks/Fruit Juices/Fresh Coconut.jpg"),
-fj_14: require("../../assets/images/drinks/Fruit Juices/Mix Fruit Juice.jpg"),
-
-/* ================= SODAS ================= */
-sd_1: require("../../assets/images/drinks/Sodas/Lemon Soda.jpg"),
-sd_2: require("../../assets/images/drinks/Sodas/BlackCurrant Soda.jpg"),
-sd_3: require("../../assets/images/drinks/Sodas/Strawberry Soda.jpg"),
-sd_4: require("../../assets/images/drinks/Sodas/BlueBerry Soda.jpg"),
-sd_5: require("../../assets/images/drinks/Sodas/KIWI Soda.jpg"),
+  /* ================= SODAS ================= */
+  sd_1: require("../../assets/images/drinks/Sodas/Lemon Soda.jpg"),
+  sd_2: require("../../assets/images/drinks/Sodas/BlackCurrant Soda.jpg"),
+  sd_3: require("../../assets/images/drinks/Sodas/Strawberry Soda.jpg"),
+  sd_4: require("../../assets/images/drinks/Sodas/BlueBerry Soda.jpg"),
+  sd_5: require("../../assets/images/drinks/Sodas/KIWI Soda.jpg"),
 };
 
 const DEFAULT_IMAGE = require("../../assets/images/indian/basmati_rice/Chicken Briyani.jpg");
@@ -407,18 +406,18 @@ export default function Drinks() {
         style={[styles.foodCard, { width: size }]}
         onPress={() => openCustomize(item)}
       >
-           <View style={styles.foodImageBox}>
-  <Image
-    source={FOOD_IMAGES[item.id] || DEFAULT_IMAGE}
-    style={styles.foodImage}
-    resizeMode="cover"
-  />
-</View>
+        <View style={styles.foodImageBox}>
+          <Image
+            source={FOOD_IMAGES[item.id] || DEFAULT_IMAGE}
+            style={styles.foodImage}
+            resizeMode="cover"
+          />
+        </View>
         <View style={styles.foodInfo}>
           <Text style={styles.foodName} numberOfLines={2}>
             {item.name}
           </Text>
-          <Text style={styles.foodPrice}>₹ {item.price.toFixed(2)}</Text>
+          <Text style={styles.foodPrice}>$ {item.price.toFixed(2)}</Text>
           <View style={styles.addBtn}>
             <Text style={styles.addBtnText}>Select & Customize</Text>
           </View>
@@ -429,48 +428,44 @@ export default function Drinks() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0b0b0b" }}>
-     {/* HEADER */}
-<View style={styles.header}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Text style={styles.title}>DRINKS</Text>
 
-  <Text style={styles.title}>DRINKS</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          {/* Cart Button */}
+          <Pressable
+            onPress={() => router.replace("/cart")}
+            style={styles.cartBtn}
+          >
+            <Text style={styles.cartText}>Cart</Text>
 
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {totalItems > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{totalItems}</Text>
+              </View>
+            )}
+          </Pressable>
 
-    {/* Cart Button */}
-    <Pressable
-      onPress={() => router.replace("/cart")}
-      style={styles.cartBtn}
-    >
-      <Text style={styles.cartText}>Cart</Text>
-
-      {totalItems > 0 && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{totalItems}</Text>
+          {/* Back Button */}
+          <Pressable
+            onPress={() => {
+              if (orderContext?.section === "SECTION_1") {
+                router.replace("/sections/section1");
+              } else if (orderContext?.section === "SECTION_2") {
+                router.replace("/sections/section2");
+              } else if (orderContext?.section === "SECTION_3") {
+                router.replace("/sections/section3");
+              } else if (orderContext?.section === "TAKEAWAY") {
+                router.replace("/sections/takeaway");
+              }
+            }}
+            style={styles.backBtn}
+          >
+            <Text style={styles.backText}>Back</Text>
+          </Pressable>
         </View>
-      )}
-    </Pressable>
-
-    {/* Back Button */}
-<Pressable
-  onPress={() => {
-    if (orderContext?.section === "SECTION_1") {
-      router.replace("/sections/section1");
-    } else if (orderContext?.section === "SECTION_2") {
-      router.replace("/sections/section2");
-    } else if (orderContext?.section === "SECTION_3") {
-      router.replace("/sections/section3");
-    } else if (orderContext?.section === "TAKEAWAY") {
-      router.replace("/sections/takeaway");
-    }
-  }}
-  style={styles.backBtn}
->
-  <Text style={styles.backText}>Back</Text>
-</Pressable>
-
-  </View>
-
-</View>
+      </View>
 
       {/* KITCHENS */}
       <View style={styles.kitchensContainer}>
@@ -492,8 +487,8 @@ export default function Drinks() {
                   { width: width < 600 ? 80 : 100 },
                 ]}
                 onPress={() => {
-                if (!isActive) router.replace(k.route as any);
-              }}
+                  if (!isActive) router.replace(k.route as any);
+                }}
               >
                 <View
                   style={[
@@ -729,10 +724,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-   foodImage: {
-  width: "100%",
-  height: "100%",
-},
+  foodImage: {
+    width: "100%",
+    height: "100%",
+  },
 
   foodInfo: { padding: 10 },
   foodName: { color: "#fff", fontWeight: "700", fontSize: 13, marginBottom: 4 },

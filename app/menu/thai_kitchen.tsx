@@ -20,9 +20,19 @@ import {
 /* ================= KITCHENS ================= */
 const KITCHENS = [
   { id: "k4", name: "THAI KITCHEN", route: "/menu/thai_kitchen", icon: "🍜" },
-  { id: "k1", name: "INDIAN KITCHEN", route: "/menu/indian_kitchen", icon: "🍛" },
+  {
+    id: "k1",
+    name: "INDIAN KITCHEN",
+    route: "/menu/indian_kitchen",
+    icon: "🍛",
+  },
   { id: "k2", name: "SOUTH INDIAN", route: "/menu/south_indian", icon: "🥞" },
-  { id: "k3", name: "WESTERN KITCHEN", route: "/menu/western_kitchen", icon: "🍔" },
+  {
+    id: "k3",
+    name: "WESTERN KITCHEN",
+    route: "/menu/western_kitchen",
+    icon: "🍔",
+  },
   { id: "k5", name: "DRINKS", route: "/menu/drinks", icon: "🥤" },
 ];
 
@@ -46,26 +56,17 @@ const ITEMS_BY_GROUP: Record<
   { id: string; name: string; priceS: number; priceL?: number }[]
 > = {
   Thai_Soup: [
-    { id: "ts1", name: "Tomyam Seafood (S)", priceS: 13.5, priceL: 15.0 },
-    { id: "ts1", name: "Tomyam Seafood (L)", priceS: 18.5, priceL: 15.0 },
-    { id: "ts2", name: "Tomyam Chicken (S)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts2", name: "Tomyam Chicken (L)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts3", name: "Tomyam Beef (S)", priceS: 13.0, priceL: 15.0 },
-    { id: "ts3", name: "Tomyam Beef (L)", priceS: 13.0, priceL: 15.0 },
-    { id: "ts4", name: "Tomyam Fish (S)", priceS: 13.0, priceL: 15.0 },
-    { id: "ts4", name: "Tomyam Fish (L)", priceS: 13.0, priceL: 15.0 },
-    { id: "ts5", name: "Fish Soup (S)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts5", name: "Fish Soup (L)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts6", name: "Chicken Soup (S)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts6", name: "Chicken Soup (L)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts7", name: "Beef Soup (S)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts7", name: "Beef Soup (L)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts8", name: "OX Tail (S)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts8", name: "OX Tail (L)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts9", name: "Veg Soup (S)", priceS: 12.0, priceL: 14.0 },
-    { id: "ts9", name: "Veg Soup (L)", priceS: 12.0, priceL: 14.0 },
+    { id: "ts1", name: "Tomyam Seafood", priceS: 13.5, priceL: 15.0 },
+    { id: "ts2", name: "Tomyam Chicken", priceS: 12.0, priceL: 14.0 },
+    { id: "ts3", name: "Tomyam Beef", priceS: 13.0, priceL: 15.0 },
+    { id: "ts4", name: "Tomyam Fish", priceS: 13.0, priceL: 15.0 },
+    { id: "ts5", name: "Fish Soup", priceS: 12.0, priceL: 14.0 },
+    { id: "ts6", name: "Chicken Soup", priceS: 12.0, priceL: 14.0 },
+    { id: "ts7", name: "Beef Soup", priceS: 12.0, priceL: 14.0 },
+    { id: "ts8", name: "OX Tail", priceS: 12.0, priceL: 14.0 },
+    { id: "ts9", name: "Veg Soup", priceS: 12.0, priceL: 14.0 },
     { id: "ts10", name: "Prawn Crackers", priceS: 12.0, priceL: 14.0 },
-    { id: "ts10", name: "Buka Puasa", priceS: 12.0, priceL: 14.0 },
+    { id: "ts11", name: "Buka Puasa", priceS: 12.0, priceL: 14.0 },
   ],
   Dishes: [
     { id: "s1", name: "Tom Yum Soup", priceS: 8.5 },
@@ -80,7 +81,6 @@ const ITEMS_BY_GROUP: Record<
     { id: "n6", name: "String Ray $18", priceS: 12.5 },
     { id: "n7", name: "String Ray $20", priceS: 12.5 },
     { id: "n8", name: "String Ray (L)", priceS: 12.5 },
-
   ],
   Fried_Rice: [
     { id: "fr1", name: "Chinese", priceS: 13.5 },
@@ -106,22 +106,19 @@ const ITEMS_BY_GROUP: Record<
     { id: "fr21", name: "Tumeric Chicken", priceS: 13.0 },
     { id: "fr22", name: "Singapura", priceS: 13.0 },
     { id: "fr23", name: "Telur Mata", priceS: 13.0 },
-    
-
   ],
   Noodles: [
-  { id: "no1", name: "Tomyam", priceS: 13.5 },
-  { id: "no2", name: "Pattaya", priceS: 13.5 },
-  { id: "no3", name: "Soup", priceS: 13.5 },
-  { id: "no4", name: "Bandung", priceS: 13.5 },
-  { id: "no5", name: "Hong Kong", priceS: 13.5 },
-  { id: "no6", name: "Hailam B Pepper", priceS: 13.5 },
-  { id: "no7", name: "Thai", priceS: 13.5 },
-  { id: "no8", name: "Mamak Style", priceS: 13.5 },
-  { id: "no9", name: "Hokkien", priceS: 13.5 },
-  { id: "no10", name: "Cockles", priceS: 13.5 },
-  { id: "no11", name: "Ikan Bilis", priceS: 13.5 },
- 
+    { id: "no1", name: "Tomyam", priceS: 13.5 },
+    { id: "no2", name: "Pattaya", priceS: 13.5 },
+    { id: "no3", name: "Soup", priceS: 13.5 },
+    { id: "no4", name: "Bandung", priceS: 13.5 },
+    { id: "no5", name: "Hong Kong", priceS: 13.5 },
+    { id: "no6", name: "Hailam B Pepper", priceS: 13.5 },
+    { id: "no7", name: "Thai", priceS: 13.5 },
+    { id: "no8", name: "Mamak Style", priceS: 13.5 },
+    { id: "no9", name: "Hokkien", priceS: 13.5 },
+    { id: "no10", name: "Cockles", priceS: 13.5 },
+    { id: "no11", name: "Ikan Bilis", priceS: 13.5 },
   ],
 
   Omellete: [
@@ -133,8 +130,6 @@ const ITEMS_BY_GROUP: Record<
     { id: "o6", name: "Egg Wrap Beef", priceS: 14.0 },
     { id: "o7", name: "Diced Chicken", priceS: 14.0 },
     { id: "o8", name: "Diced Beef", priceS: 14.0 },
-    
-    
   ],
   Steam_Rice: [
     { id: "r1", name: "Hot & Spicy", priceS: 3.5 },
@@ -167,8 +162,6 @@ const ITEMS_BY_GROUP: Record<
     { id: "v14", name: "L.Beans Egg (L)", priceS: 12.0 },
     { id: "v15", name: "Kai Shrimp (S)", priceS: 11.0 },
     { id: "v16", name: "Kai Shrimp (L)", priceS: 12.0 },
-    
-    
   ],
 };
 
@@ -187,14 +180,14 @@ const FOOD_IMAGES: Record<string, any> = {
   ts10: require("../../assets/images/THAI KItchen/thai soup/24.jpg"),
 
   //fish//
-    n1: require("../../assets/images/THAI KItchen/fishes/2.jpg"),
-    n2: require("../../assets/images/THAI KItchen/fishes/5.jpg"),
-    n3: require("../../assets/images/THAI KItchen/fishes/4.jpg"),
-    n4: require("../../assets/images/THAI KItchen/fishes/4.jpg"),
-    n5: require("../../assets/images/THAI KItchen/fishes/1.jpg"),
-    n6: require("../../assets/images/THAI KItchen/fishes/1.jpg"),
-    n7: require("../../assets/images/THAI KItchen/fishes/3.jpg"),
-    n8: require("../../assets/images/THAI KItchen/fishes/3.jpg"),
+  n1: require("../../assets/images/THAI KItchen/fishes/2.jpg"),
+  n2: require("../../assets/images/THAI KItchen/fishes/5.jpg"),
+  n3: require("../../assets/images/THAI KItchen/fishes/4.jpg"),
+  n4: require("../../assets/images/THAI KItchen/fishes/4.jpg"),
+  n5: require("../../assets/images/THAI KItchen/fishes/1.jpg"),
+  n6: require("../../assets/images/THAI KItchen/fishes/1.jpg"),
+  n7: require("../../assets/images/THAI KItchen/fishes/3.jpg"),
+  n8: require("../../assets/images/THAI KItchen/fishes/3.jpg"),
 
   //Omellete//
   o1: require("../../assets/images/THAI KItchen/omellete/6.jpg"),
@@ -220,7 +213,7 @@ const FOOD_IMAGES: Record<string, any> = {
   r10: require("../../assets/images/THAI KItchen/Steam Rice/8.jpg"),
   r11: require("../../assets/images/THAI KItchen/Steam Rice/8.jpg"),
   r12: require("../../assets/images/THAI KItchen/Steam Rice/8.jpg"),
-  
+
   // Fried Rice //
 
   fr1: require("../../assets/images/THAI KItchen/fried rice/4.jpg"),
@@ -250,36 +243,34 @@ const FOOD_IMAGES: Record<string, any> = {
   //Noodles//
 
   no1: require("../../assets/images/THAI KItchen/noodles/4.jpg"),
- no2: require("../../assets/images/THAI KItchen/noodles/8.jpg"),
- no3: require("../../assets/images/THAI KItchen/noodles/5.jpg"),
- no4: require("../../assets/images/THAI KItchen/noodles/6.jpg"),
- no5: require("../../assets/images/THAI KItchen/noodles/7.jpg"),
- no6: require("../../assets/images/THAI KItchen/noodles/11.jpg"),
- no7: require("../../assets/images/THAI KItchen/noodles/1.jpg"),
- no8: require("../../assets/images/THAI KItchen/noodles/2.jpg"),
- no9: require("../../assets/images/THAI KItchen/noodles/3.jpg"),
- no10: require("../../assets/images/THAI KItchen/noodles/10.jpg"),
- no11: require("../../assets/images/THAI KItchen/noodles/9.jpg"),
+  no2: require("../../assets/images/THAI KItchen/noodles/8.jpg"),
+  no3: require("../../assets/images/THAI KItchen/noodles/5.jpg"),
+  no4: require("../../assets/images/THAI KItchen/noodles/6.jpg"),
+  no5: require("../../assets/images/THAI KItchen/noodles/7.jpg"),
+  no6: require("../../assets/images/THAI KItchen/noodles/11.jpg"),
+  no7: require("../../assets/images/THAI KItchen/noodles/1.jpg"),
+  no8: require("../../assets/images/THAI KItchen/noodles/2.jpg"),
+  no9: require("../../assets/images/THAI KItchen/noodles/3.jpg"),
+  no10: require("../../assets/images/THAI KItchen/noodles/10.jpg"),
+  no11: require("../../assets/images/THAI KItchen/noodles/9.jpg"),
 
- //  THAI VEG  //
-v1: require("../../assets/images/THAI KItchen/thai veg/mix veg sf s.jpg"),
-v2: require("../../assets/images/THAI KItchen/thai veg/mix veg sf L.jpg"),
-v3: require("../../assets/images/THAI KItchen/thai veg/Salt Baked Fish.jpg"),
-v4: require("../../assets/images/THAI KItchen/thai veg/Salt baked fish L.jpg"),
-v5: require("../../assets/images/THAI KItchen/thai veg/kai Shrimp s.jpg"),
-v6: require("../../assets/images/THAI KItchen/thai veg/kai Shrimp L.jpg"),
-v7: require("../../assets/images/THAI KItchen/thai veg/kailan beef.jpg"),
-v8: require("../../assets/images/THAI KItchen/thai veg/kailan beef 2.jpg"),
-v9: require("../../assets/images/THAI KItchen/thai veg/kang Kong s.jpg"),
-v10: require("../../assets/images/THAI KItchen/thai veg/kang Kong L.jpg"),
-v11: require("../../assets/images/THAI KItchen/thai veg/tauge masin s.jpg"),
-v12: require("../../assets/images/THAI KItchen/thai veg/tauge masin L.jpg"),
-v13: require("../../assets/images/THAI KItchen/thai veg/l.Beans egg S.jpg"),
-v14: require("../../assets/images/THAI KItchen/thai veg/l.Beans egg L.jpg"),
-v15: require("../../assets/images/THAI KItchen/thai veg/kai Shrimp s.jpg"),
-v16: require("../../assets/images/THAI KItchen/thai veg/kai Shrimp L.jpg"),
-
-    
+  //  THAI VEG  //
+  v1: require("../../assets/images/THAI KItchen/thai veg/mix veg sf s.jpg"),
+  v2: require("../../assets/images/THAI KItchen/thai veg/mix veg sf L.jpg"),
+  v3: require("../../assets/images/THAI KItchen/thai veg/Salt Baked Fish.jpg"),
+  v4: require("../../assets/images/THAI KItchen/thai veg/Salt baked fish L.jpg"),
+  v5: require("../../assets/images/THAI KItchen/thai veg/kai Shrimp s.jpg"),
+  v6: require("../../assets/images/THAI KItchen/thai veg/kai Shrimp L.jpg"),
+  v7: require("../../assets/images/THAI KItchen/thai veg/kailan beef.jpg"),
+  v8: require("../../assets/images/THAI KItchen/thai veg/kailan beef 2.jpg"),
+  v9: require("../../assets/images/THAI KItchen/thai veg/kang Kong s.jpg"),
+  v10: require("../../assets/images/THAI KItchen/thai veg/kang Kong L.jpg"),
+  v11: require("../../assets/images/THAI KItchen/thai veg/tauge masin s.jpg"),
+  v12: require("../../assets/images/THAI KItchen/thai veg/tauge masin L.jpg"),
+  v13: require("../../assets/images/THAI KItchen/thai veg/l.Beans egg S.jpg"),
+  v14: require("../../assets/images/THAI KItchen/thai veg/l.Beans egg L.jpg"),
+  v15: require("../../assets/images/THAI KItchen/thai veg/kai Shrimp s.jpg"),
+  v16: require("../../assets/images/THAI KItchen/thai veg/kai Shrimp L.jpg"),
 };
 
 const DEFAULT_IMAGE = require("../../assets/images/THAI KItchen/fishes/1.jpg");
@@ -370,7 +361,7 @@ export default function ThaiKitchen() {
           <Text style={styles.foodName} numberOfLines={2}>
             {item.name}
           </Text>
-          <Text style={styles.foodPrice}>From ₹ {item.priceS.toFixed(2)}</Text>
+          <Text style={styles.foodPrice}>From $ {item.priceS.toFixed(2)}</Text>
           <View style={styles.addBtn}>
             <Text style={styles.addBtnText}>Select & Customize</Text>
           </View>
@@ -382,84 +373,85 @@ export default function ThaiKitchen() {
   return (
     <View style={{ flex: 1, backgroundColor: "#0b0b0b" }}>
       {/* HEADER */}
-<View style={styles.header}>
+      <View style={styles.header}>
+        <Text style={styles.title}>THAI KITCHEN</Text>
 
-  <Text style={styles.title}>THAI KITCHEN</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          {/* Cart Button */}
+          <Pressable
+            onPress={() => router.replace("/cart")}
+            style={styles.cartBtn}
+          >
+            <Text style={styles.cartText}>Cart</Text>
 
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {totalItems > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{totalItems}</Text>
+              </View>
+            )}
+          </Pressable>
 
-    {/* Cart Button */}
-    <Pressable
-      onPress={() => router.replace("/cart")}
-      style={styles.cartBtn}
-    >
-      <Text style={styles.cartText}>Cart</Text>
-
-      {totalItems > 0 && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{totalItems}</Text>
+          {/* Back Button */}
+          <Pressable
+            onPress={() => {
+              if (orderContext?.section === "SECTION_1") {
+                router.replace("/sections/section1");
+              } else if (orderContext?.section === "SECTION_2") {
+                router.replace("/sections/section2");
+              } else if (orderContext?.section === "SECTION_3") {
+                router.replace("/sections/section3");
+              } else if (orderContext?.orderType === "TAKEAWAY") {
+                router.replace("/sections/takeaway");
+              }
+            }}
+            style={styles.backBtn}
+          >
+            <Text style={styles.backText}>Back</Text>
+          </Pressable>
         </View>
-      )}
-    </Pressable>
-
-    {/* Back Button */}
-    <Pressable
-      onPress={() => {
-  if (orderContext?.section === "SECTION_1") {
-    router.replace("/sections/section1");
-  } 
-  else if (orderContext?.section === "SECTION_2") {
-    router.replace("/sections/section2");
-  } 
-  else if (orderContext?.section === "SECTION_3") {
-    router.replace("/sections/section3");
-  } 
-  else if (orderContext?.orderType === "TAKEAWAY") {
-    router.replace("/sections/takeaway");
-  }
-}}
-      style={styles.backBtn}
-    >
-      <Text style={styles.backText}>Back</Text>
-    </Pressable>
-
-  </View>
-
-</View>
+      </View>
 
       {/* KITCHENS - UPDATED DESIGN */}
       <View style={styles.kitchensContainer}>
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.kitchensScroll}
         >
           {KITCHENS.map((k) => {
             const isActive = k.name === ACTIVE_KITCHEN;
-            
+
             return (
               <TouchableOpacity
                 key={k.id}
                 style={[
                   styles.kitchenCard,
-                  isActive ? styles.kitchenCardActive : styles.kitchenCardInactive,
-                  { width: width < 600 ? 80 : 100 }
+                  isActive
+                    ? styles.kitchenCardActive
+                    : styles.kitchenCardInactive,
+                  { width: width < 600 ? 80 : 100 },
                 ]}
                 onPress={() => {
                   if (!isActive) router.replace(k.route as any);
                 }}
               >
-                <View style={[
-                  styles.iconContainer,
-                  { backgroundColor: isActive ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)" }
-                ]}>
+                <View
+                  style={[
+                    styles.iconContainer,
+                    {
+                      backgroundColor: isActive
+                        ? "rgba(255,255,255,0.2)"
+                        : "rgba(0,0,0,0.3)",
+                    },
+                  ]}
+                >
                   <Text style={styles.kitchenIcon}>{k.icon}</Text>
                 </View>
-                                <Text 
+                <Text
                   style={[
                     styles.kitchenName,
                     { color: isActive ? "#052b12" : "#fff" },
-                    { textAlign: "center" }  // ✅ MOVE IT HERE
+                    { textAlign: "center" }, // ✅ MOVE IT HERE
                   ]}
                   numberOfLines={2}
                 >
@@ -621,16 +613,16 @@ const styles = StyleSheet.create({
   badgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
 
   backBtn: {
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-  borderRadius: 8,
-  backgroundColor: "#333",
-},
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: "#333",
+  },
 
-backText: {
-  color: "#fff",
-  fontWeight: "700",
-},
+  backText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
 
   // --- KITCHEN STYLES ---
   kitchensContainer: {

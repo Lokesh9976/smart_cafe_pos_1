@@ -1,5 +1,7 @@
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
+import { clearCart } from "../cartStore";
+
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -11,7 +13,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-
+import { findActiveOrder, loadActiveOrderToCart } from "../activeOrdersStore";
 import { setOrderContext } from "../orderContextStore";
 import { getTables } from "../tableStatusStore";
 
@@ -64,12 +66,11 @@ const TABLES: TableItem[] = [
 ];
 
 export default function Section1() {
-
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      forceUpdate(v => v + 1);
+      forceUpdate((v) => v + 1);
     }, 1000);
 
     return () => clearInterval(timer);
@@ -91,11 +92,10 @@ export default function Section1() {
   const smallFont = Math.max(10, Math.min(13, itemSize * 0.2));
 
   const renderItem = ({ item }: { item: TableItem }) => {
-
     const tables = getTables();
 
     const tableData = tables.find(
-      t => t.section === "SECTION_1" && t.tableNo === item.label
+      (t) => t.section === "SECTION_1" && t.tableNo === item.label,
     );
 
     let borderColor = "rgba(255,255,255,0.35)";
@@ -105,31 +105,23 @@ export default function Section1() {
     let orderText = "";
 
     if (tableData) {
-
-      const minutes =
-        Math.floor((Date.now() - tableData.startTime) / 60000);
+      const minutes = Math.floor((Date.now() - tableData.startTime) / 60000);
 
       if (minutes >= 30) {
-
         bgColor = "rgba(255,0,0,0.25)";
-
       } else if (minutes >= 15) {
-
         bgColor = "rgba(255,165,0,0.25)";
-
       } else {
-
         bgColor = "rgba(0,255,0,0.25)";
       }
 
       const time = new Date(tableData.startTime);
 
-      const hours = time.getHours().toString().padStart(2,"0");
-      const mins = time.getMinutes().toString().padStart(2,"0");
+      const hours = time.getHours().toString().padStart(2, "0");
+      const mins = time.getMinutes().toString().padStart(2, "0");
 
       timeText = `${hours}:${mins}`;
       orderText = `#${tableData.orderId}`;
-
     }
 
     return (
@@ -145,26 +137,33 @@ export default function Section1() {
         ]}
         activeOpacity={0.85}
         onPress={() => {
-
           setOrderContext({
             orderType: "DINE_IN",
             section: "SECTION_1",
             tableNo: item.label,
           });
 
-          router.replace("/menu/thai_kitchen");
+          const existing = findActiveOrder({
+            orderType: "DINE_IN",
+            section: "SECTION_1",
+            tableNo: item.label,
+          });
 
+          clearCart();
+
+          if (existing) {
+            loadActiveOrderToCart(existing.orderId);
+          }
+
+          router.replace("/menu/thai_kitchen");
         }}
       >
-
         <BlurView intensity={35} tint="dark" style={styles.glassInner}>
-
           <View style={styles.tableContent}>
-
             <Text
               style={[
                 styles.tableNumber,
-                { fontSize: numberFont, color: textColor }
+                { fontSize: numberFont, color: textColor },
               ]}
             >
               {item.label}
@@ -181,14 +180,10 @@ export default function Section1() {
                 </Text>
               </>
             )}
-
           </View>
-
         </BlurView>
-
       </TouchableOpacity>
     );
-
   };
 
   return (
@@ -197,11 +192,9 @@ export default function Section1() {
       style={styles.background}
       resizeMode="cover"
     >
-
       <View style={styles.overlay} />
 
       <View style={styles.topBar}>
-
         <View style={{ width: 60 }} />
 
         <Text style={styles.headerTitle}>SECTION 1</Text>
@@ -212,7 +205,6 @@ export default function Section1() {
         >
           <Text style={styles.backText}>Back</Text>
         </Pressable>
-
       </View>
 
       <FlatList
@@ -228,14 +220,11 @@ export default function Section1() {
           paddingBottom: 30,
         }}
       />
-
     </ImageBackground>
   );
-
 }
 
 const styles = StyleSheet.create({
-
   background: { flex: 1, width: "100%", height: "100%" },
 
   overlay: {
@@ -297,5 +286,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#eaeaea",
   },
-
 });

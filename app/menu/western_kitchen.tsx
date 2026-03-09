@@ -5,6 +5,7 @@ import { getOrderContext } from "../orderContextStore";
 
 import {
   FlatList,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -14,7 +15,6 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
-  Image,
 } from "react-native";
 
 /* ================= KITCHENS ================= */
@@ -138,10 +138,10 @@ const ITEMS_BY_GROUP: Record<
   ],
 
   Ribeye: [
-  { id: "ribeye_1", name: "Ribeye B. Pepper", price: 12.5 },
-  { id: "ribeye_2", name: "Ribeye Mushroom", price: 12.5 },
-  { id: "ribeye_3", name: "Ribeye Cheese", price: 12.5 },
-],
+    { id: "ribeye_1", name: "Ribeye B. Pepper", price: 12.5 },
+    { id: "ribeye_2", name: "Ribeye Mushroom", price: 12.5 },
+    { id: "ribeye_3", name: "Ribeye Cheese", price: 12.5 },
+  ],
 
   Fish: [
     { id: "fish_1", name: "Fish N Chips", price: 12.5 },
@@ -178,7 +178,6 @@ const ITEMS_BY_GROUP: Record<
 };
 
 const FOOD_IMAGES: Record<string, any> = {
-
   /* ================= APPETIZER ================= */
   app_1: require("../../assets/images/western/Appetizer/Soup garlic bread.jpg"),
   app_2: require("../../assets/images/western/Appetizer/Fries.jpg"),
@@ -351,17 +350,17 @@ export default function WesternKitchen() {
         onPress={() => openCustomize(item)}
       >
         <View style={styles.foodImageBox}>
-  <Image
-    source={FOOD_IMAGES[item.id] || DEFAULT_IMAGE}
-    style={styles.foodImage}
-    resizeMode="cover"
-  />
-</View>
+          <Image
+            source={FOOD_IMAGES[item.id] || DEFAULT_IMAGE}
+            style={styles.foodImage}
+            resizeMode="cover"
+          />
+        </View>
         <View style={styles.foodInfo}>
           <Text style={styles.foodName} numberOfLines={2}>
             {item.name}
           </Text>
-          <Text style={styles.foodPrice}>₹ {item.price.toFixed(2)}</Text>
+          <Text style={styles.foodPrice}>$ {item.price.toFixed(2)}</Text>
           <View style={styles.addBtn}>
             <Text style={styles.addBtnText}>Select & Customize</Text>
           </View>
@@ -372,50 +371,44 @@ export default function WesternKitchen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0b0b0b" }}>
-     {/* HEADER */}
-<View style={styles.header}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Text style={styles.title}>WESTERN KITCHEN</Text>
 
-  <Text style={styles.title}>WESTERN KITCHEN</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          {/* Cart Button */}
+          <Pressable
+            onPress={() => router.replace("/cart")}
+            style={styles.cartBtn}
+          >
+            <Text style={styles.cartText}>Cart</Text>
 
-  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {totalItems > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{totalItems}</Text>
+              </View>
+            )}
+          </Pressable>
 
-    {/* Cart Button */}
-    <Pressable
-      onPress={() => router.replace("/cart")}
-      style={styles.cartBtn}
-    >
-      <Text style={styles.cartText}>Cart</Text>
-
-      {totalItems > 0 && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{totalItems}</Text>
+          {/* Back Button */}
+          <Pressable
+            onPress={() => {
+              if (orderContext?.section === "SECTION_1") {
+                router.replace("/sections/section1");
+              } else if (orderContext?.section === "SECTION_2") {
+                router.replace("/sections/section2");
+              } else if (orderContext?.section === "SECTION_3") {
+                router.replace("/sections/section3");
+              } else if (orderContext?.orderType === "TAKEAWAY") {
+                router.replace("/sections/takeaway");
+              }
+            }}
+            style={styles.backBtn}
+          >
+            <Text style={styles.backText}>Back</Text>
+          </Pressable>
         </View>
-      )}
-    </Pressable>
-
-    {/* Back Button */}
-    <Pressable
-onPress={() => {
-  if (orderContext?.section === "SECTION_1") {
-    router.replace("/sections/section1");
-  } 
-  else if (orderContext?.section === "SECTION_2") {
-    router.replace("/sections/section2");
-  } 
-  else if (orderContext?.section === "SECTION_3") {
-    router.replace("/sections/section3");
-  } 
-  else if (orderContext?.orderType === "TAKEAWAY") {
-    router.replace("/sections/takeaway");
-  }
-}}      style={styles.backBtn}
-    >
-      <Text style={styles.backText}>Back</Text>
-    </Pressable>
-
-  </View>
-
-</View>
+      </View>
 
       {/* KITCHENS */}
       <View style={styles.kitchensContainer}>
@@ -693,10 +686,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-   foodImage: {
-  width: "100%",
-  height: "100%",
-},
+  foodImage: {
+    width: "100%",
+    height: "100%",
+  },
   foodInfo: { padding: 10 },
   foodName: { color: "#fff", fontWeight: "700", fontSize: 13, marginBottom: 4 },
   foodPrice: {

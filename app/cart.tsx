@@ -1,8 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
-import { holdOrder } from "./heldOrdersStore";
-import { setTableHold } from "./tableStatusStore";
-import { getNextOrderId } from "./orderIdStore";
+import React, { useEffect, useMemo, useState } from "react";
 
 import {
   Dimensions,
@@ -19,7 +16,19 @@ import {
   clearCart,
   getCart,
   removeFromCartGlobal,
+  subscribeCart,
 } from "./cartStore";
+
+import { holdOrder } from "./heldOrdersStore";
+import { getNextOrderId } from "./orderIdStore";
+import { setTableActive, setTableHold } from "./tableStatusStore";
+
+import {
+  addItemsToActiveOrder,
+  createActiveOrder,
+  findActiveOrder,
+  markItemsSent,
+} from "./activeOrdersStore";
 
 import { getOrderContext } from "./orderContextStore";
 
@@ -30,7 +39,16 @@ export default function CartScreen() {
   const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
   const [cart, setCart] = useState(getCart());
-  const refreshCart = () => setCart([...getCart()]);
+
+  useEffect(() => {
+    const unsub = subscribeCart(() => {
+      setCart([...getCart()]);
+    });
+
+    return unsub;
+  }, []);
+
+  const activeOrder = orderContext ? findActiveOrder(orderContext) : undefined;
 
   const subtotal = useMemo(() => {
     return cart.reduce((sum, item) => {
@@ -43,6 +61,37 @@ export default function CartScreen() {
     return null;
   }
 
+  /* ================= SEND ORDER ================= */
+
+  const sendOrder = () => {
+    const cartItems = getCart();
+    const context = orderContext;
+
+    if (!context || cartItems.length === 0) return;
+
+    let order = findActiveOrder(context);
+
+    if (!order) {
+      const orderId = getNextOrderId();
+      createActiveOrder(orderId, context, cartItems);
+      order = findActiveOrder(context);
+    } else {
+      addItemsToActiveOrder(order, cartItems);
+    }
+
+    markItemsSent(order!);
+
+    /* mark table active */
+
+    if (context.orderType === "DINE_IN") {
+      setTableActive(context.section!, context.tableNo!, order!.orderId);
+    }
+
+    clearCart();
+
+    router.replace("/(tabs)/category");
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <ImageBackground
@@ -51,38 +100,29 @@ export default function CartScreen() {
         resizeMode="cover"
       >
         <View style={styles.overlay}>
-
           {/* TOP BAR */}
-          <View style={styles.topBar}>
 
-            {/* LEFT SIDE */}
+          <View style={styles.topBar}>
             <Pressable
               style={styles.holdListBtn}
-              onPress={() => router.push("/heldOrders" as any)}
+              onPress={() => router.push("/heldOrders")}
             >
               <Text style={styles.holdText}>Held Orders</Text>
             </Pressable>
 
-            {/* RIGHT SIDE */}
             <View style={styles.topRightGroup}>
               <Pressable style={styles.back} onPress={() => router.back()}>
                 <Text style={styles.topBtnText}>Back</Text>
               </Pressable>
 
-              <Pressable
-                style={styles.clear}
-                onPress={() => {
-                  clearCart();
-                  refreshCart();
-                }}
-              >
+              <Pressable style={styles.clear} onPress={() => clearCart()}>
                 <Text style={styles.topBtnText}>Clear Cart</Text>
               </Pressable>
             </View>
-
           </View>
 
           {/* ORDER HEADER */}
+
           {orderContext.orderType === "DINE_IN" && (
             <Text style={styles.contextText}>
               DINE-IN | {orderContext.section} | Table {orderContext.tableNo}
@@ -98,6 +138,7 @@ export default function CartScreen() {
           <Text style={styles.title}>YOUR CART</Text>
 
           {/* CART ITEMS */}
+
           <FlatList
             data={cart}
             keyExtractor={(i, index) => i.id + index}
@@ -105,92 +146,109 @@ export default function CartScreen() {
             ListEmptyComponent={
               <Text style={styles.emptyText}>Cart Empty</Text>
             }
-            renderItem={({ item }) => (
-              <View style={styles.row}>
+            renderItem={({ item }) => {
+              const orderItem = activeOrder?.items.find(
+                (i) =>
+                  i.id === item.id &&
+                  i.spicy === item.spicy &&
+                  i.oil === item.oil &&
+                  i.salt === item.salt &&
+                  i.sugar === item.sugar &&
+                  i.note === item.note,
+              );
 
-                <View style={styles.itemInfo}>
-                  <Text style={styles.name}>{item.name}</Text>
+              return (
+                <View style={styles.row}>
+                  <View style={styles.itemInfo}>
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Text style={styles.name}>{item.name}</Text>
 
-                  <Text style={styles.qty}>Qty: {item.qty}</Text>
+                      {orderItem?.status === "SENT" && (
+                        <Text style={styles.sentBadge}> ✓ SENT</Text>
+                      )}
 
-                  <Text style={styles.price}>
-                    SGD {(item.price || 0).toFixed(2)}
-                  </Text>
+                      {!orderItem && (
+                        <Text style={styles.newBadge}> ● NEW</Text>
+                      )}
+                    </View>
+
+                    <Text style={styles.qty}>Qty: {item.qty}</Text>
+
+                    <Text style={styles.price}>
+                      SGD {(item.price || 0).toFixed(2)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.actionRow}>
+                    <Pressable
+                      style={styles.plus}
+                      onPress={() => addToCartGlobal(item)}
+                    >
+                      <Text style={styles.btnText}>+</Text>
+                    </Pressable>
+
+                    <Pressable
+                      style={styles.minus}
+                      onPress={() => removeFromCartGlobal(item.id)}
+                    >
+                      <Text style={styles.btnText}>−</Text>
+                    </Pressable>
+                  </View>
                 </View>
-
-                <View style={styles.actionRow}>
-                  <Pressable
-                    style={styles.plus}
-                    onPress={() => {
-                      addToCartGlobal(item);
-                      refreshCart();
-                    }}
-                  >
-                    <Text style={styles.btnText}>+</Text>
-                  </Pressable>
-
-                  <Pressable
-                    style={styles.minus}
-                    onPress={() => {
-                      removeFromCartGlobal(item.id);
-                      refreshCart();
-                    }}
-                  >
-                    <Text style={styles.btnText}>−</Text>
-                  </Pressable>
-                </View>
-
-              </View>
-            )}
+              );
+            }}
           />
 
           <View style={styles.divider} />
 
           {/* SUBTOTAL */}
+
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>
-              SGD {subtotal.toFixed(2)}
-            </Text>
+            <Text style={styles.summaryValue}>SGD {subtotal.toFixed(2)}</Text>
           </View>
 
           <View style={styles.divider} />
 
-          {/* HOLD + PROCEED */}
-          <View style={styles.bottomButtons}>
+          {/* ACTION BUTTONS */}
 
+          <View style={styles.bottomButtons}>
             <Pressable
               style={styles.holdBtn}
               onPress={() => {
-
                 const orderId = getNextOrderId();
 
-                holdOrder(cart, orderContext);
+                holdOrder(orderId, cart, orderContext);
 
                 if (orderContext.orderType === "DINE_IN") {
                   setTableHold(
                     orderContext.section!,
                     orderContext.tableNo!,
-                    orderId
+                    orderId,
                   );
                 }
 
                 clearCart();
+
                 router.replace("/(tabs)/category");
               }}
             >
               <Text style={styles.holdText}>Hold Order</Text>
             </Pressable>
 
-            <Pressable
-              style={styles.proceedBtn}
-              onPress={() => router.push("/summary" as any)}
-            >
-              <Text style={styles.proceedText}>Proceed</Text>
+            <Pressable style={styles.sendBtn} onPress={sendOrder}>
+              <Text style={styles.sendText}>Send Order</Text>
             </Pressable>
 
+            <Pressable
+              style={styles.billBtn}
+              onPress={() => router.push("/summary")}
+            >
+              <Text style={styles.billText}>Proceed to Bill</Text>
+            </Pressable>
           </View>
-
         </View>
       </ImageBackground>
     </View>
@@ -198,7 +256,6 @@ export default function CartScreen() {
 }
 
 const styles = StyleSheet.create({
-
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -209,7 +266,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
   },
 
   topRightGroup: {
@@ -236,9 +292,21 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+  holdListBtn: {
+    backgroundColor: "#f59e0b",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+
+  holdText: {
+    color: "#000",
+    fontWeight: "900",
+  },
+
   contextText: {
     color: "#9ef01a",
-    marginBottom: 8,
+    marginTop: 10,
     fontWeight: "800",
   },
 
@@ -256,13 +324,11 @@ const styles = StyleSheet.create({
 
   row: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "rgba(0,0,0,0.9)",
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    marginBottom: 12,
-    borderRadius: 14,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 10,
   },
 
   itemInfo: {
@@ -277,35 +343,34 @@ const styles = StyleSheet.create({
 
   qty: {
     color: "#9ef01a",
-    marginTop: 6,
-    fontWeight: "bold",
+    marginTop: 5,
   },
 
   price: {
     color: "#fff",
-    fontWeight: "900",
     marginTop: 4,
+    fontWeight: "900",
   },
 
   actionRow: {
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
   },
 
   plus: {
     backgroundColor: "#22c55e",
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 45,
+    height: 45,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
   },
 
   minus: {
     backgroundColor: "#ef4444",
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 45,
+    height: 45,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -314,27 +379,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 20,
-  },
-
-  holdListBtn: {
-    backgroundColor: "#f59e0b",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-
-  holdBtn: {
-    flex: 1,
-    backgroundColor: "#f59e0b",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-
-  holdText: {
-    color: "#000",
-    fontWeight: "900",
-    fontSize: 16,
   },
 
   divider: {
@@ -350,13 +394,11 @@ const styles = StyleSheet.create({
 
   summaryLabel: {
     color: "#fff",
-    fontSize: 16,
     fontWeight: "700",
   },
 
   summaryValue: {
     color: "#9ef01a",
-    fontSize: 18,
     fontWeight: "900",
   },
 
@@ -365,7 +407,15 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  proceedBtn: {
+  holdBtn: {
+    flex: 1,
+    backgroundColor: "#f59e0b",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  sendBtn: {
     flex: 1,
     backgroundColor: "#22c55e",
     padding: 16,
@@ -373,10 +423,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  proceedText: {
-    color: "#052b12",
-    fontWeight: "900",
-    fontSize: 16,
+  billBtn: {
+    flex: 1,
+    backgroundColor: "#3b82f6",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
   },
 
+  sendText: {
+    color: "#052b12",
+    fontWeight: "900",
+  },
+
+  billText: {
+    color: "#fff",
+    fontWeight: "900",
+  },
+
+  sentBadge: {
+    color: "#22c55e",
+    marginLeft: 8,
+    fontWeight: "bold",
+  },
+
+  newBadge: {
+    color: "#facc15",
+    marginLeft: 8,
+    fontWeight: "bold",
+  },
 });

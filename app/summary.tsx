@@ -10,13 +10,18 @@ import {
   View,
 } from "react-native";
 
-import { getCart } from "./cartStore";
+import { findActiveOrder } from "./activeOrdersStore";
 import { getOrderContext } from "./orderContextStore";
 
 export default function SummaryScreen() {
   const router = useRouter();
-  const orderContext = getOrderContext();
-  const cart = getCart();
+
+  const context = getOrderContext();
+  const activeOrder = context ? findActiveOrder(context) : undefined;
+
+  const cart = useMemo(() => {
+    return activeOrder ? activeOrder.items : [];
+  }, [activeOrder]);
 
   const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
@@ -38,8 +43,8 @@ export default function SummaryScreen() {
 
   /* ================= GUARD ================= */
 
-  if (!orderContext || cart.length === 0) {
-    router.replace("/(tabs)/category" as any);
+  if (!context || !activeOrder) {
+    router.replace("/(tabs)/category");
     return null;
   }
 
@@ -53,29 +58,26 @@ export default function SummaryScreen() {
         resizeMode="cover"
       >
         <View style={styles.overlay}>
-          {/* Top Bar */}
           <View style={styles.topBar}>
             <Pressable style={styles.back} onPress={() => router.back()}>
               <Text style={styles.topBtnText}>Back</Text>
             </Pressable>
           </View>
 
-          {/* Order Info */}
-          {orderContext.orderType === "DINE_IN" && (
+          {context.orderType === "DINE_IN" && (
             <Text style={styles.contextText}>
-              DINE-IN | {orderContext.section} | Table {orderContext.tableNo}
+              DINE-IN | {context.section} | Table {context.tableNo}
             </Text>
           )}
 
-          {orderContext.orderType === "TAKEAWAY" && (
+          {context.orderType === "TAKEAWAY" && (
             <Text style={styles.contextText}>
-              TAKEAWAY | Order {orderContext.takeawayNo}
+              TAKEAWAY | Order {context.takeawayNo}
             </Text>
           )}
 
           <Text style={styles.title}>ORDER SUMMARY</Text>
 
-          {/* Items */}
           <FlatList
             data={cart}
             keyExtractor={(item, index) => item.id + index}
@@ -116,7 +118,6 @@ export default function SummaryScreen() {
 
           <View style={styles.divider} />
 
-          {/* Totals */}
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Total Items</Text>
             <Text style={styles.summaryValue}>{totalItems}</Text>
@@ -141,10 +142,9 @@ export default function SummaryScreen() {
 
           <View style={styles.divider} />
 
-          {/* Proceed */}
           <Pressable
             style={styles.proceedBtn}
-            onPress={() => router.push("/payment" as any)}
+            onPress={() => router.push("/payment")}
           >
             <Text style={styles.proceedText}>Proceed to Payment</Text>
           </Pressable>
@@ -272,5 +272,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-
