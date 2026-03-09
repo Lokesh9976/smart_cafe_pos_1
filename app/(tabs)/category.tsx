@@ -1,87 +1,250 @@
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  FlatList,
   ImageBackground,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
   useWindowDimensions,
+  View,
 } from "react-native";
 
+import { clearCart } from "../cartStore";
+import { setOrderContext } from "../orderContextStore";
+import { getTables } from "../tableStatusStore";
+
+// Type definitions
+type TableItem = {
+  id: string;
+  label: string;
+};
+
+// Data Generation
+const DINE_IN_TABLES: TableItem[] = [
+  ...Array.from({ length: 35 }, (_, i) => ({
+    id: `${i + 1}`,
+    label: `${i + 1}`,
+  })),
+  { id: "36", label: "18-A" },
+  { id: "37", label: "19-A" },
+  { id: "38", label: "20-A" },
+  { id: "39", label: "21-A" },
+  { id: "40", label: "22-A" },
+];
+
+const TAKEAWAY_TABLES: TableItem[] = [
+  ...Array.from({ length: 20 }, (_, i) => ({
+    id: `T${i + 1}`,
+    label: `T${i + 1}`,
+  })),
+  ...Array.from({ length: 20 }, (_, i) => ({
+    id: `D${i + 1}`,
+    label: `D${i + 1}`,
+  })),
+];
+
+const SECTIONS = ["SECTION_1", "SECTION_2", "SECTION_3", "TAKEAWAY"];
+
 export default function Category() {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const router = useRouter();
 
-  const isLandscape = width > height;
+  const [activeTab, setActiveTab] = useState<string>("SECTION_1");
+  const [, forceUpdate] = useState(0);
 
-  const MAX_WIDTH = 520;
-  const containerWidth = Math.min(width - 40, MAX_WIDTH);
+  // Force re-render for timers
+  useEffect(() => {
+    const timer = setInterval(() => {
+      forceUpdate((v) => v + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  const GAP = 14;
-  const boxWidth = (containerWidth - GAP) / 2;
-  const boxHeight = isLandscape ? boxWidth * 0.8 : boxWidth;
+  // Responsive Grid Calculations
+  // Phone: 3-4, Tablet: 5-6, POS Terminal: 8-12
+  const numColumns = width > 1200 ? 10 : width > 800 ? 8 : width > 600 ? 5 : 3;
 
-  const categories = ["Section 1", "Section 2", "Section 3", "Take Away"];
+  const GAP = 12;
+  const SCREEN_PADDING = 20;
+  const itemSize =
+    (width - SCREEN_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
 
-  const handlePress = (item: string) => {
-    if (item === "Section 1") router.push("/sections/section1");
-    if (item === "Section 2") router.push("/sections/section2");
-    if (item === "Section 3") router.push("/sections/section3");
-    if (item === "Take Away") router.push("/sections/takeaway");
-  };
+  // Responsive Fonts
+  const numberFont = Math.max(16, Math.min(24, itemSize * 0.3));
+  const smallFont = Math.max(12, Math.min(16, itemSize * 0.2));
 
-  const handleLogout = () => {
-    router.replace("/");
-  };
+  // Determine current active table list
+  const currentTables =
+    activeTab === "TAKEAWAY" ? TAKEAWAY_TABLES : DINE_IN_TABLES;
 
-  const handleTimeEntry = () => {
-    router.push("/TimeEntry");
+  const renderItem = ({ item }: { item: TableItem }) => {
+    const tables = getTables();
+
+    // Check if table is occupied based on section and label
+    const tableData =
+      activeTab === "TAKEAWAY"
+        ? undefined // Currently takeaway mockup doesn't tightly couple with tableStatusStore, but you can update if needed
+        : tables.find(
+            (t) => t.section === activeTab && t.tableNo === item.label
+          );
+
+    let borderColor = "rgba(255,255,255,0.2)";
+    let bgColor = "rgba(255,255,255,0.05)";
+    let tableNoColor = "#ffffff";
+    let timeText = "";
+    let orderText = "";
+
+    if (tableData) {
+      const minutes = Math.floor((Date.now() - tableData.startTime) / 60000);
+
+      // Card Background and Number Colors mapping elapsed time
+      if (minutes >= 30) {
+        bgColor = "rgba(220, 38, 38, 0.15)";     
+        tableNoColor = "#ffb3b3";               
+        borderColor = "rgba(248, 113, 113, 0.5)";
+      } else if (minutes >= 15) {
+        bgColor = "rgba(217, 119, 6, 0.15)";     
+        tableNoColor = "#ffe699";               
+        borderColor = "rgba(251, 191, 36, 0.5)";
+      } else {
+        bgColor = "rgba(255, 255, 255, 0.05)";     
+        tableNoColor = "#ffffff";               
+        borderColor = "rgba(255, 255, 255, 0.35)";
+      }
+
+      const time = new Date(tableData.startTime);
+      const hours = time.getHours().toString().padStart(2, "0");
+      const mins = time.getMinutes().toString().padStart(2, "0");
+
+      timeText = `${hours}:${mins}`;
+      orderText = `#${tableData.orderId}`;
+    }
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.tableBox,
+          {
+            width: itemSize,
+            height: itemSize,
+            borderColor: borderColor,
+            backgroundColor: bgColor,
+          },
+        ]}
+        activeOpacity={0.85}
+        onPress={() => {
+          if (activeTab === "TAKEAWAY") {
+            setOrderContext({
+              orderType: "TAKEAWAY",
+              takeawayNo: item.label,
+            });
+          } else {
+            setOrderContext({
+              orderType: "DINE_IN",
+              section: activeTab,
+              tableNo: item.label,
+            });
+          }
+          clearCart();
+          router.push("/menu/thai_kitchen");
+        }}
+      >
+        <BlurView intensity={55} tint="dark" style={styles.glassInner}>
+          <View style={styles.tableContent}>
+            <Text
+              style={[
+                styles.tableNumber,
+                { fontSize: numberFont, color: tableNoColor },
+              ]}
+              numberOfLines={1}
+            >
+              {item.label}
+            </Text>
+
+            {tableData && (
+              <>
+                <Text style={[styles.timeText, { fontSize: smallFont }]}>
+                  {timeText}
+                </Text>
+
+                <Text style={[styles.orderText, { fontSize: smallFont }]}>
+                  {orderText}
+                </Text>
+              </>
+            )}
+          </View>
+        </BlurView>
+      </TouchableOpacity>
+    );
   };
 
   return (
     <ImageBackground
-      source={require("../../assets/images/003.jpg")}
+      source={require("../../assets/images/11.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
-      {/* 🔵 Time Entry Button */}
-      <TouchableOpacity style={styles.timeEntryBtn} onPress={handleTimeEntry}>
-        <BlurView intensity={40} tint="dark" style={styles.glassBtnInner}>
-          <Text style={styles.buttonText}>Time Entry</Text>
-        </BlurView>
-      </TouchableOpacity>
+      <View style={styles.overlay} />
 
-      {/* 🔴 Logout Button */}
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <BlurView intensity={40} tint="dark" style={styles.glassBtnInner}>
-          <Text style={styles.buttonText}>Logout</Text>
-        </BlurView>
-      </TouchableOpacity>
-
-      {/* Content */}
-      <View style={styles.contentWrapper}>
-        {/* Title */}
-        <BlurView intensity={50} tint="dark" style={styles.glassTitle}>
-          <Text style={styles.titleText}>Choose Your Category</Text>
-        </BlurView>
-
-        <View style={[styles.gridContainer, { width: containerWidth }]}>
-          {categories.map((item) => (
-            <TouchableOpacity
-              key={item}
-              style={[styles.box, { width: boxWidth, height: boxHeight }]}
-              activeOpacity={0.85}
-              onPress={() => handlePress(item)}
-            >
-              <BlurView intensity={55} tint="dark" style={styles.glassBoxInner}>
-                <Text style={styles.boxText}>{item}</Text>
-              </BlurView>
-            </TouchableOpacity>
-          ))}
+      {/* HORIZONTAL NAVIGATION BAR */}
+      <BlurView intensity={60} tint="dark" style={styles.topNavContainer}>
+        <View style={styles.tabsWrapper}>
+          {SECTIONS.map((section) => {
+            const isActive = activeTab === section;
+            const displayName = section.replace("_", " ");
+            return (
+              <TouchableOpacity
+                key={section}
+                onPress={() => setActiveTab(section)}
+                style={[styles.tabBtn, isActive && styles.activeTabBtn]}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    isActive && styles.activeTabText,
+                  ]}
+                >
+                  {displayName}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
-      </View>
+
+        <View style={styles.navRightGroup}>
+          <TouchableOpacity
+            style={styles.headerActionBtn}
+            onPress={() => router.push("/TimeEntry")}
+          >
+            <Text style={styles.headerActionText}>Time Entry</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.headerActionBtn, styles.logoutBtn]}
+            onPress={() => router.replace("/")}
+          >
+            <Text style={styles.headerActionText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+      </BlurView>
+
+      {/* TABLE GRID */}
+      <FlatList
+        data={currentTables}
+        key={numColumns} // Force re-render grid on split change
+        numColumns={numColumns}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        columnWrapperStyle={{ gap: GAP }}
+        contentContainerStyle={{
+          gap: GAP,
+          padding: SCREEN_PADDING,
+          paddingBottom: 40,
+        }}
+        showsVerticalScrollIndicator={false}
+      />
     </ImageBackground>
   );
 }
@@ -93,94 +256,119 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
-  contentWrapper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: "rgba(0,0,0,0.25)",
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.6)",
   },
 
-  /* Title Glass */
-  glassTitle: {
-    marginBottom: 20,
-    borderRadius: 14,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
-  },
-
-  titleText: {
-    fontSize: 22,
-    color: "#e5ff9a",
-    fontWeight: "800",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    textAlign: "center",
-  },
-
-  gridContainer: {
+  /* TOP NAVIGATION */
+  topNavContainer: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-
-  /* Category Box */
- box: {
-  borderRadius: 20,
-  overflow: "hidden",
-  marginBottom: 14,
-  borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.35)",
-  backgroundColor: "rgba(255,255,255,0.05)", // transparent glass
-},
-
-  glassBoxInner: {
-    flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-  },
-
-    boxText: {
-      color: "#ffffff",
-      fontSize: 24,
-      fontWeight: "900",
-      letterSpacing: 0.6,
-    },
-
-  /* Logout Button */
-  logoutBtn: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    borderRadius: 12,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.1)",
     zIndex: 10,
-  },
-
-  /* Time Entry Button */
-  timeEntryBtn: {
-    position: "absolute",
-    top: 50,
-    right: 120,
-    borderRadius: 12,
     overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
-    zIndex: 10,
   },
 
-  glassBtnInner: {
+  tabsWrapper: {
+    flexDirection: "row",
+    gap: 12,
+    flexWrap: "wrap",
+    flex: 1,
+  },
+
+  tabBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+
+  activeTabBtn: {
+    backgroundColor: "rgba(215, 255, 154, 0.2)",
+    borderColor: "#d7ff9a",
+  },
+
+  tabText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+
+  activeTabText: {
+    color: "#d7ff9a",
+    fontWeight: "900",
+  },
+
+  navRightGroup: {
+    flexDirection: "row",
+    gap: 12,
+    marginLeft: 20,
+  },
+
+  headerActionBtn: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
 
-  buttonText: {
+  logoutBtn: {
+    backgroundColor: "rgba(239, 68, 68, 0.3)",
+    borderColor: "rgba(239, 68, 68, 0.6)",
+    borderWidth: 1,
+  },
+
+  headerActionText: {
     color: "#ffffff",
     fontWeight: "800",
     fontSize: 14,
   },
-});
 
+  /* GRID CARDS */
+  tableBox: {
+    borderRadius: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+  },
+
+  glassInner: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 8,
+  },
+
+  tableContent: {
+    alignItems: "center",
+  },
+
+  tableNumber: {
+    fontWeight: "900",
+    marginBottom: 4,
+    textShadowColor: "rgba(0,0,0,0.8)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+    textAlign: "center",
+  },
+
+  timeText: {
+    color: "#fff",
+    fontWeight: "700",
+    marginBottom: 2,
+    opacity: 0.9,
+  },
+
+  orderText: {
+    color: "#d7ff9a",
+    fontWeight: "800",
+    opacity: 0.9,
+  },
+});

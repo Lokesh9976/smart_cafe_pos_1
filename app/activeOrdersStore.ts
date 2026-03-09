@@ -1,4 +1,5 @@
-import { CartItem, addToCartGlobal, clearCart } from "./cartStore";
+import { create } from "zustand";
+import { CartItem } from "./cartStore";
 import { OrderContext } from "./orderContextStore";
 
 /* ================= TYPES ================= */
@@ -14,18 +15,110 @@ export type ActiveOrder = {
   createdAt: number;
 };
 
+type ActiveOrdersState = {
+  activeOrders: ActiveOrder[];
+  appendOrder: (orderId: string, context: OrderContext, cartItems: CartItem[]) => void;
+  markItemsSent: (orderId: string) => void;
+  closeActiveOrder: (orderId: string) => void;
+};
+
 /* ================= STORE ================= */
 
-let activeOrders: ActiveOrder[] = [];
+export const useActiveOrdersStore = create<ActiveOrdersState>((set, get) => ({
+  activeOrders: [],
 
-/* ================= GET ALL ================= */
+  /* ================= APPEND ORDER (Create OR Add Items) ================= */
+  appendOrder: (orderId, context, cartItems) => {
+    const { activeOrders } = get();
 
-export const getActiveOrders = () => activeOrders;
+    // Check if order exists for this context
+    const existingOrderIndex = activeOrders.findIndex((o) => {
+      if (context.orderType === "DINE_IN") {
+        return (
+          o.context.orderType === "DINE_IN" &&
+          o.context.section === context.section &&
+          o.context.tableNo === context.tableNo
+        );
+      }
+      if (context.orderType === "TAKEAWAY") {
+        return (
+          o.context.orderType === "TAKEAWAY" &&
+          o.context.takeawayNo === context.takeawayNo
+        );
+      }
+      return false;
+    });
 
-/* ================= FIND ORDER ================= */
+    if (existingOrderIndex === -1) {
+      // 1. Order Doesn't Exist -> Create New
+      const newOrder: ActiveOrder = {
+        orderId,
+        context,
+        items: cartItems.map((i) => ({ ...i, status: "NEW" })),
+        createdAt: Date.now(),
+      };
+      set({ activeOrders: [...activeOrders, newOrder] });
+    } else {
+      // 2. Order Exists -> Add items, handling quantity correctly with lineItemId
+      const updatedOrders = [...activeOrders];
+      const existingOrder = { ...updatedOrders[existingOrderIndex] };
+      existingOrder.items = [...existingOrder.items];
+
+      cartItems.forEach((cartItem) => {
+        // Look for exact item in NEW status
+        const itemIndex = existingOrder.items.findIndex(
+          (i) => i.lineItemId === cartItem.lineItemId && i.status === "NEW"
+        );
+
+        if (itemIndex > -1) {
+          // Increment qty if already added in this round
+          existingOrder.items[itemIndex] = {
+            ...existingOrder.items[itemIndex],
+            qty: existingOrder.items[itemIndex].qty + cartItem.qty,
+          };
+        } else {
+          // Add as new line
+          existingOrder.items.push({ ...cartItem, status: "NEW" });
+        }
+      });
+
+      updatedOrders[existingOrderIndex] = existingOrder;
+      set({ activeOrders: updatedOrders });
+    }
+  },
+
+  /* ================= MARK SENT ================= */
+  markItemsSent: (orderId) => {
+    const { activeOrders } = get();
+    set({
+      activeOrders: activeOrders.map((order) => {
+        if (order.orderId !== orderId) return order;
+
+        return {
+          ...order,
+          items: order.items.map((item) =>
+            item.status === "NEW" ? { ...item, status: "SENT" } : item
+          ),
+        };
+      }),
+    });
+  },
+
+  /* ================= CLOSE ORDER ================= */
+  closeActiveOrder: (orderId) => {
+    const { activeOrders } = get();
+    set({
+      activeOrders: activeOrders.filter((o) => o.orderId !== orderId),
+    });
+  },
+}));
+
+/* ================= BACKGROUND COMPATIBILITY ================= */
+
+export const getActiveOrders = () => useActiveOrdersStore.getState().activeOrders;
 
 export const findActiveOrder = (context: OrderContext) => {
-  return activeOrders.find((o) => {
+  return useActiveOrdersStore.getState().activeOrders.find((o) => {
     if (context.orderType === "DINE_IN") {
       return (
         o.context.orderType === "DINE_IN" &&
@@ -45,92 +138,19 @@ export const findActiveOrder = (context: OrderContext) => {
   });
 };
 
-/* ================= CREATE ORDER ================= */
-
-export const createActiveOrder = (
-  orderId: string,
-  context: OrderContext,
-  cart: CartItem[],
-) => {
-  const items: OrderItem[] = cart.map((i) => ({
-    ...JSON.parse(JSON.stringify(i)),
-    status: "NEW",
-  }));
-
-  const order: ActiveOrder = {
-    orderId,
-    context,
-    items,
-    createdAt: Date.now(),
-  };
-
-  activeOrders.push(order);
+// Map legacy function to new store logic
+export const createActiveOrder = (orderId: string, context: OrderContext, cart: CartItem[]) => {
+    useActiveOrdersStore.getState().appendOrder(orderId, context, cart);
 };
 
-/* ================= ADD ITEMS ================= */
-
-export const addItemsToActiveOrder = (
-  order: ActiveOrder,
-  items: CartItem[],
-) => {
-  items.forEach((item) => {
-    const existing = order.items.find(
-      (i) =>
-        i.id === item.id &&
-        i.spicy === item.spicy &&
-        i.oil === item.oil &&
-        i.salt === item.salt &&
-        i.sugar === item.sugar &&
-        i.note === item.note &&
-        i.status === "NEW",
-    );
-
-    if (!existing) {
-      order.items.push({
-        ...item,
-        status: "NEW",
-      });
-    }
-  });
+export const addItemsToActiveOrder = (order: ActiveOrder, items: CartItem[]) => {
+    useActiveOrdersStore.getState().appendOrder(order.orderId, order.context, items);
 };
-
-/* ================= MARK SENT ================= */
 
 export const markItemsSent = (order: ActiveOrder) => {
-  order.items.forEach((i) => {
-    if (i.status === "NEW") {
-      i.status = "SENT";
-    }
-  });
+    useActiveOrdersStore.getState().markItemsSent(order.orderId);
 };
-
-/* ================= CLOSE ORDER ================= */
 
 export const closeActiveOrder = (orderId: string) => {
-  activeOrders = activeOrders.filter((o) => o.orderId !== orderId);
-};
-
-/* ================= LOAD ORDER TO CART ================= */
-
-export const loadActiveOrderToCart = (orderId: string) => {
-  const order = activeOrders.find((o) => o.orderId === orderId);
-
-  if (!order) return;
-
-  clearCart();
-
-  order.items.forEach((item) => {
-    for (let i = 0; i < item.qty; i++) {
-      addToCartGlobal({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        spicy: item.spicy,
-        oil: item.oil,
-        salt: item.salt,
-        sugar: item.sugar,
-        note: item.note,
-      });
-    }
-  });
+    useActiveOrdersStore.getState().closeActiveOrder(orderId);
 };

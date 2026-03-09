@@ -110,7 +110,7 @@ export default function SummaryScreen() {
                 </View>
 
                 <Text style={styles.price}>
-                  SGD {((item.price || 0) * item.qty).toFixed(2)}
+                  ${((item.price || 0) * item.qty).toFixed(2)}
                 </Text>
               </View>
             )}
@@ -125,19 +125,19 @@ export default function SummaryScreen() {
 
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>SGD {subtotal.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
           </View>
 
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>GST (9%)</Text>
-            <Text style={styles.summaryValue}>SGD {gst.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>${gst.toFixed(2)}</Text>
           </View>
 
           <View style={styles.divider} />
 
           <View style={styles.summaryRow}>
             <Text style={styles.grandLabel}>Grand Total</Text>
-            <Text style={styles.grandValue}>SGD {grandTotal.toFixed(2)}</Text>
+            <Text style={styles.grandValue}>${grandTotal.toFixed(2)}</Text>
           </View>
 
           <View style={styles.divider} />

@@ -41,7 +41,7 @@ export default function HeldOrdersScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
-        <Pressable style={styles.backBtn} onPress={() => router.push("/cart")}>
+        <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backText}>Back</Text>
         </Pressable>
 

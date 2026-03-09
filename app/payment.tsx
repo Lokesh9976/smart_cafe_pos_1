@@ -135,6 +135,16 @@ export default function PaymentScreen() {
 
           {!isProcessing && !isSuccess && (
             <>
+              {/* TOP BAR WITH BACK BUTTON */}
+              <View style={styles.topBar}>
+                <Pressable
+                  style={styles.backBtn}
+                  onPress={() => router.push("/summary")}
+                >
+                  <Text style={styles.backText}>Back</Text>
+                </Pressable>
+              </View>
+
               {/* ORDER CONTEXT */}
 
               {context?.orderType === "DINE_IN" && (
@@ -150,7 +160,7 @@ export default function PaymentScreen() {
               )}
 
               <Text style={styles.totalText}>
-                Grand Total: SGD {total.toFixed(2)}
+                Grand Total: ${total.toFixed(2)}
               </Text>
 
               {/* PAYMENT METHODS */}
@@ -202,13 +212,13 @@ export default function PaymentScreen() {
                   {paidAmount < total && paidAmount > 0 && (
                     <Text style={styles.errorText}>
                       ⚠ Insufficient Amount{"\n"}
-                      Remaining: SGD {remaining.toFixed(2)}
+                      Remaining: ${remaining.toFixed(2)}
                     </Text>
                   )}
 
                   {paidAmount >= total && (
                     <Text style={styles.changeText}>
-                      Change: SGD {change.toFixed(2)}
+                      Change: ${change.toFixed(2)}
                     </Text>
                   )}
                 </View>
@@ -246,6 +256,24 @@ const styles = StyleSheet.create({
     color: "#d7ff9a",
     fontWeight: "800",
     marginBottom: 10,
+  },
+
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  backBtn: {
+    backgroundColor: "rgba(255,255,255,0.3)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+
+  backText: {
+    color: "#fff",
+    fontWeight: "700",
   },
 
   totalText: {

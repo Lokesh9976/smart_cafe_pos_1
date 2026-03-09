@@ -1,5 +1,6 @@
+import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 
 import {
   Dimensions,
@@ -11,50 +12,66 @@ import {
   View,
 } from "react-native";
 
-import {
-  addToCartGlobal,
-  clearCart,
-  getCart,
-  removeFromCartGlobal,
-  subscribeCart,
-} from "./cartStore";
+import { useCartStore, CartItem } from "./cartStore";
 
 import { holdOrder } from "./heldOrdersStore";
 import { getNextOrderId } from "./orderIdStore";
 import { setTableActive, setTableHold } from "./tableStatusStore";
 
-import {
-  addItemsToActiveOrder,
-  createActiveOrder,
-  findActiveOrder,
-  markItemsSent,
-} from "./activeOrdersStore";
+import { useActiveOrdersStore, OrderItem } from "./activeOrdersStore";
 
-import { getOrderContext } from "./orderContextStore";
+import { useOrderContextStore } from "./orderContextStore";
 
 export default function CartScreen() {
   const router = useRouter();
-  const orderContext = getOrderContext();
+  
+  // Zustand Hooks
+  const orderContext = useOrderContextStore((state) => state.currentOrder);
+  const cart = useCartStore((state) => state.cart);
+  const addToCartGlobal = useCartStore((state) => state.addToCartGlobal);
+  const removeFromCartGlobal = useCartStore((state) => state.removeFromCartGlobal);
+  const clearCart = useCartStore((state) => state.clearCart);
+  
+  const activeOrders = useActiveOrdersStore((state) => state.activeOrders);
+  const appendOrder = useActiveOrdersStore((state) => state.appendOrder);
+  const markItemsSent = useActiveOrdersStore((state) => state.markItemsSent);
 
   const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
-  const [cart, setCart] = useState(getCart());
-
-  useEffect(() => {
-    const unsub = subscribeCart(() => {
-      setCart([...getCart()]);
+  // Find active order for this context
+  const activeOrder = useMemo(() => {
+    if (!orderContext) return undefined;
+    
+    return activeOrders.find((o) => {
+      if (orderContext.orderType === "DINE_IN") {
+        return (
+          o.context.orderType === "DINE_IN" &&
+          o.context.section === orderContext.section &&
+          o.context.tableNo === orderContext.tableNo
+        );
+      }
+      if (orderContext.orderType === "TAKEAWAY") {
+        return (
+          o.context.orderType === "TAKEAWAY" &&
+          o.context.takeawayNo === orderContext.takeawayNo
+        );
+      }
+      return false;
     });
+  }, [activeOrders, orderContext]);
 
-    return unsub;
-  }, []);
-
-  const activeOrder = orderContext ? findActiveOrder(orderContext) : undefined;
+  // COMBINE SENT ITEMS AND NEW ITEMS FOR THE TICKET VIEW
+  const displayItems = useMemo(() => {
+    // Cast to slightly generic type to handle both
+    const sentItems: (OrderItem | CartItem)[] = activeOrder?.items || [];
+    return [...sentItems, ...cart];
+  }, [activeOrder, cart]);
 
   const subtotal = useMemo(() => {
-    return cart.reduce((sum, item) => {
+    return displayItems.reduce((sum, item) => {
       return sum + (item.price || 0) * item.qty;
     }, 0);
-  }, [cart]);
+  }, [displayItems]);
 
   if (!orderContext) {
     router.replace("/(tabs)/category");
@@ -64,29 +81,25 @@ export default function CartScreen() {
   /* ================= SEND ORDER ================= */
 
   const sendOrder = () => {
-    const cartItems = getCart();
     const context = orderContext;
 
-    if (!context || cartItems.length === 0) return;
+    if (!context || cart.length === 0) return;
 
-    let order = findActiveOrder(context);
-
-    if (!order) {
-      const orderId = getNextOrderId();
-      createActiveOrder(orderId, context, cartItems);
-      order = findActiveOrder(context);
-    } else {
-      addItemsToActiveOrder(order, cartItems);
+    // Use append logic. If there's an active order, append. Else create new one.
+    let targetOrderId = activeOrder?.orderId;
+    if (!targetOrderId) {
+      targetOrderId = getNextOrderId();
     }
 
-    markItemsSent(order!);
+    appendOrder(targetOrderId, context, cart);
+    markItemsSent(targetOrderId);
 
     /* mark table active */
-
     if (context.orderType === "DINE_IN") {
-      setTableActive(context.section!, context.tableNo!, order!.orderId);
+      setTableActive(context.section!, context.tableNo!, targetOrderId);
     }
 
+    // Critical step: the cart only stores NEW unsent items. Empty it now.
     clearCart();
 
     router.replace("/(tabs)/category");
@@ -102,12 +115,12 @@ export default function CartScreen() {
         <View style={styles.overlay}>
           {/* TOP BAR */}
 
-          <View style={styles.topBar}>
+          <BlurView intensity={70} tint="dark" style={styles.topBar}>
             <Pressable
-              style={styles.holdListBtn}
-              onPress={() => router.push("/heldOrders")}
+               style={styles.holdListBtn}
+               onPress={() => router.push("/heldOrders")}
             >
-              <Text style={styles.holdText}>Held Orders</Text>
+               <Text style={styles.holdText}>Held Orders</Text>
             </Pressable>
 
             <View style={styles.topRightGroup}>
@@ -119,7 +132,7 @@ export default function CartScreen() {
                 <Text style={styles.topBtnText}>Clear Cart</Text>
               </Pressable>
             </View>
-          </View>
+          </BlurView>
 
           {/* ORDER HEADER */}
 
@@ -135,68 +148,71 @@ export default function CartScreen() {
             </Text>
           )}
 
-          <Text style={styles.title}>YOUR CART</Text>
+          <Text style={styles.title}>TICKET</Text>
 
-          {/* CART ITEMS */}
+          {/* COMBINED ITEMS LIST */}
 
           <FlatList
-            data={cart}
-            keyExtractor={(i, index) => i.id + index}
+            data={displayItems}
+            keyExtractor={(i, index) => i.lineItemId + index}
             contentContainerStyle={{ paddingBottom: 20 }}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>Cart Empty</Text>
+              <Text style={styles.emptyText}>Ticket is Empty</Text>
             }
             renderItem={({ item }) => {
-              const orderItem = activeOrder?.items.find(
-                (i) =>
-                  i.id === item.id &&
-                  i.spicy === item.spicy &&
-                  i.oil === item.oil &&
-                  i.salt === item.salt &&
-                  i.sugar === item.sugar &&
-                  i.note === item.note,
-              );
+              // Quick check if item is from ActiveOrder store (has status prop) or Cart store (missing status prop)
+              const isSent = "status" in item && item.status === "SENT";
 
               return (
-                <View style={styles.row}>
+                <BlurView intensity={65} tint="dark" style={styles.row}>
                   <View style={styles.itemInfo}>
                     <View
                       style={{ flexDirection: "row", alignItems: "center" }}
                     >
-                      <Text style={styles.name}>{item.name}</Text>
+                      <Text style={[styles.name, isSent && styles.sentName]}>{item.name}</Text>
 
-                      {orderItem?.status === "SENT" && (
+                      {isSent ? (
                         <Text style={styles.sentBadge}> ✓ SENT</Text>
-                      )}
-
-                      {!orderItem && (
+                      ) : (
                         <Text style={styles.newBadge}> ● NEW</Text>
                       )}
+                    </View>
+
+                    {/* Modifiers Display Example */}
+                    <View style={styles.modifierContainer}>
+                       {item.spicy && <Text style={styles.modifierText}>Spicy: {item.spicy}</Text>}
+                       {item.oil && <Text style={styles.modifierText}>Oil: {item.oil}</Text>}
+                       {item.salt && <Text style={styles.modifierText}>Salt: {item.salt}</Text>}
+                       {item.sugar && <Text style={styles.modifierText}>Sugar: {item.sugar}</Text>}
+                       {item.note && <Text style={styles.modifierText}>Note: {item.note}</Text>}
                     </View>
 
                     <Text style={styles.qty}>Qty: {item.qty}</Text>
 
                     <Text style={styles.price}>
-                      SGD {(item.price || 0).toFixed(2)}
+                      ${(item.price || 0).toFixed(2)}
                     </Text>
                   </View>
 
-                  <View style={styles.actionRow}>
-                    <Pressable
-                      style={styles.plus}
-                      onPress={() => addToCartGlobal(item)}
-                    >
-                      <Text style={styles.btnText}>+</Text>
-                    </Pressable>
+                  {/* Actions: Only allow editing for NEW unsent items */}
+                  {!isSent && (
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        style={styles.plus}
+                        onPress={() => addToCartGlobal(item as CartItem)}
+                      >
+                        <Text style={styles.btnText}>+</Text>
+                      </Pressable>
 
-                    <Pressable
-                      style={styles.minus}
-                      onPress={() => removeFromCartGlobal(item.id)}
-                    >
-                      <Text style={styles.btnText}>−</Text>
-                    </Pressable>
-                  </View>
-                </View>
+                      <Pressable
+                        style={styles.minus}
+                        onPress={() => removeFromCartGlobal(item.lineItemId)}
+                      >
+                        <Text style={styles.btnText}>−</Text>
+                      </Pressable>
+                    </View>
+                  )}
+                </BlurView>
               );
             }}
           />
@@ -206,8 +222,8 @@ export default function CartScreen() {
           {/* SUBTOTAL */}
 
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>SGD {subtotal.toFixed(2)}</Text>
+            <Text style={styles.summaryLabel}>Ticket Total</Text>
+            <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
           </View>
 
           <View style={styles.divider} />
@@ -218,9 +234,9 @@ export default function CartScreen() {
             <Pressable
               style={styles.holdBtn}
               onPress={() => {
-                const orderId = getNextOrderId();
+                const orderId = activeOrder?.orderId || getNextOrderId();
 
-                holdOrder(orderId, cart, orderContext);
+                holdOrder(orderId, cart, orderContext); // Might need updating if HeldOrders also needs refactoring later
 
                 if (orderContext.orderType === "DINE_IN") {
                   setTableHold(
@@ -235,16 +251,20 @@ export default function CartScreen() {
                 router.replace("/(tabs)/category");
               }}
             >
-              <Text style={styles.holdText}>Hold Order</Text>
+               <Text style={styles.holdText}>Hold Order</Text>
             </Pressable>
 
-            <Pressable style={styles.sendBtn} onPress={sendOrder}>
+            <Pressable 
+              style={[styles.sendBtn, cart.length === 0 && styles.disabledBtn]} 
+              onPress={sendOrder}
+              disabled={cart.length === 0}
+            >
               <Text style={styles.sendText}>Send Order</Text>
             </Pressable>
 
             <Pressable
               style={styles.billBtn}
-              onPress={() => router.push("/summary")}
+              onPress={() => router.push("/summary")} // Checkout process
             >
               <Text style={styles.billText}>Proceed to Bill</Text>
             </Pressable>
@@ -266,6 +286,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderColor: "rgba(255,255,255,0.15)",
+    borderWidth: 1,
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: "hidden",
   },
 
   topRightGroup: {
@@ -302,6 +329,7 @@ const styles = StyleSheet.create({
   holdText: {
     color: "#000",
     fontWeight: "900",
+    fontSize: 20,
   },
 
   contextText: {
@@ -325,10 +353,13 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "rgba(0,0,0,0.9)",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderColor: "rgba(255,255,255,0.15)",
+    borderWidth: 1,
     padding: 16,
     borderRadius: 12,
     marginBottom: 10,
+    overflow: "hidden",
   },
 
   itemInfo: {
@@ -339,6 +370,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 18,
+  },
+  
+  sentName: {
+     color: "#a3a3a3",
   },
 
   qty: {
@@ -379,6 +414,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 20,
+  },
+  
+  modifierContainer: {
+     marginTop: 4,
+     marginBottom: 4,
+  },
+  
+  modifierText: {
+     color: "#9ca3af",
+     fontSize: 12,
   },
 
   divider: {
@@ -422,6 +467,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
+  
+  disabledBtn: {
+    backgroundColor: "#166534",
+    opacity: 0.5,
+  },
 
   billBtn: {
     flex: 1,
@@ -434,22 +484,26 @@ const styles = StyleSheet.create({
   sendText: {
     color: "#052b12",
     fontWeight: "900",
+    fontSize: 20,
   },
 
   billText: {
     color: "#fff",
     fontWeight: "900",
+    fontSize: 20,
   },
 
   sentBadge: {
     color: "#22c55e",
     marginLeft: 8,
     fontWeight: "bold",
+    fontSize: 12,
   },
 
   newBadge: {
     color: "#facc15",
     marginLeft: 8,
     fontWeight: "bold",
+    fontSize: 12,
   },
 });

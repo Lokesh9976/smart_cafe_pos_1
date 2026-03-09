@@ -1,3 +1,5 @@
+import { create } from "zustand";
+
 export type OrderContext = {
   orderType: "DINE_IN" | "TAKEAWAY";
   section?: string;
@@ -5,14 +7,19 @@ export type OrderContext = {
   takeawayNo?: string;
 };
 
-let currentOrder: OrderContext | null = null;
-
-export const setOrderContext = (data: OrderContext) => {
-  currentOrder = data;
+type OrderContextState = {
+  currentOrder: OrderContext | null;
+  setOrderContext: (data: OrderContext) => void;
+  clearOrderContext: () => void;
 };
 
-export const getOrderContext = () => currentOrder;
+export const useOrderContextStore = create<OrderContextState>((set) => ({
+  currentOrder: null,
+  setOrderContext: (data) => set({ currentOrder: data }),
+  clearOrderContext: () => set({ currentOrder: null }),
+}));
 
-export const clearOrderContext = () => {
-  currentOrder = null;
-};
+// Backwards compatibility for existing code that hasn't been migrated yet
+export const getOrderContext = () => useOrderContextStore.getState().currentOrder;
+export const setOrderContext = (data: OrderContext) => useOrderContextStore.getState().setOrderContext(data);
+export const clearOrderContext = () => useOrderContextStore.getState().clearOrderContext();
