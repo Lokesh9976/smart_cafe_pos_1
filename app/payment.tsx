@@ -3,6 +3,7 @@ import { clearCart } from "./cartStore";
 import { clearOrderContext, getOrderContext } from "./orderContextStore";
 import { clearTable } from "./tableStatusStore";
 
+import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -136,14 +137,14 @@ export default function PaymentScreen() {
           {!isProcessing && !isSuccess && (
             <>
               {/* TOP BAR WITH BACK BUTTON */}
-              <View style={styles.topBar}>
+              <BlurView intensity={40} tint="dark" style={styles.topBar}>
                 <Pressable
                   style={styles.backBtn}
-                  onPress={() => router.push("/summary")}
+                  onPress={() => router.back()}
                 >
                   <Text style={styles.backText}>Back</Text>
                 </Pressable>
-              </View>
+              </BlurView>
 
               {/* ORDER CONTEXT */}
 
@@ -248,7 +249,7 @@ export default function PaymentScreen() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.25)",
     padding: 20,
   },
 
@@ -260,8 +261,10 @@ const styles = StyleSheet.create({
 
   topBar: {
     flexDirection: "row",
-    alignItems: "center",
     marginBottom: 20,
+    padding: 12,
+    borderRadius: 16,
+    overflow: "hidden",
   },
 
   backBtn: {
@@ -292,7 +295,7 @@ const styles = StyleSheet.create({
 
   methodBtn: {
     padding: 12,
-    backgroundColor: "#333",
+    backgroundColor: "rgba(255,255,255,0.15)",
     borderRadius: 10,
   },
 
@@ -315,7 +318,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    backgroundColor: "#222",
+    backgroundColor: "rgba(255,255,255,0.15)",
     color: "#fff",
     padding: 10,
     borderRadius: 8,

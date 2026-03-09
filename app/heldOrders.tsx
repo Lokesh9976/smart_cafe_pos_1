@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { BlurView } from "expo-blur";
+import { Dimensions, FlatList, ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { addToCartGlobal, clearCart } from "./cartStore";
 import { getHeldOrders, removeHeldOrder } from "./heldOrdersStore";
@@ -21,6 +21,8 @@ const getHeldTime = (time: number) => {
 
 export default function HeldOrdersScreen() {
   const router = useRouter();
+  const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+
   const [orders, setOrders] = useState(
     [...getHeldOrders()].sort((a, b) => a.time - b.time),
   );
@@ -39,8 +41,14 @@ export default function HeldOrdersScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topBar}>
+    <View style={{ flex: 1 }}>
+      <ImageBackground
+        source={require("../assets/images/11.jpg")}
+        style={{ width: SCREEN_W, height: SCREEN_H }}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay}>
+          <BlurView intensity={40} tint="dark" style={styles.topBar}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backText}>Back</Text>
         </Pressable>
@@ -48,25 +56,27 @@ export default function HeldOrdersScreen() {
         <Text style={styles.title}>Held Orders</Text>
 
         <View style={{ width: 60 }} />
-      </View>
+          </BlurView>
 
-      <FlatList
+          <FlatList
         data={orders}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={
           <Text style={{ color: "#fff" }}>No Held Orders</Text>
         }
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.header}>Order #{item.orderId}</Text>
+          <BlurView intensity={40} tint="dark" style={styles.card}>
+            <Text style={styles.header}>
+              Order #{typeof item.orderId === "object" ? "Unknown" : item.orderId}
+            </Text>
 
-            {item.context.orderType === "DINE_IN" && (
+            {item.context?.orderType === "DINE_IN" && (
               <Text style={styles.subHeader}>
                 {item.context.section} | Table {item.context.tableNo}
               </Text>
             )}
 
-            {item.context.orderType === "TAKEAWAY" && (
+            {item.context?.orderType === "TAKEAWAY" && (
               <Text style={styles.subHeader}>
                 Takeaway {item.context.takeawayNo}
               </Text>
@@ -80,12 +90,12 @@ export default function HeldOrdersScreen() {
                   {food.name} x{food.qty}
                 </Text>
 
-                {food.spicy && (
+                {food.spicy && food.spicy !== "Medium" && (
                   <Text style={styles.mod}>Spicy: {food.spicy}</Text>
                 )}
-                {food.oil && <Text style={styles.mod}>Oil: {food.oil}</Text>}
-                {food.salt && <Text style={styles.mod}>Salt: {food.salt}</Text>}
-                {food.sugar && (
+                {food.oil && food.oil !== "Normal" && <Text style={styles.mod}>Oil: {food.oil}</Text>}
+                {food.salt && food.salt !== "Normal" && <Text style={styles.mod}>Salt: {food.salt}</Text>}
+                {food.sugar && food.sugar !== "Normal" && (
                   <Text style={styles.mod}>Sugar: {food.sugar}</Text>
                 )}
                 {food.note && <Text style={styles.mod}>Note: {food.note}</Text>}
@@ -105,22 +115,24 @@ export default function HeldOrdersScreen() {
 
                 removeHeldOrder(item.id);
                 refresh();
-                router.push("/cart");
+                router.back();
               }}
             >
               <Text style={styles.btnText}>Open Order</Text>
             </Pressable>
-          </View>
-        )}
-      />
-    </View>
-  );
+            </BlurView>
+          )}
+        />
+      </View>
+    </ImageBackground>
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
-  container: {
+  overlay: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: "rgba(0,0,0,0.25)",
     padding: 20,
   },
 
@@ -132,10 +144,10 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: "#111",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 16,
     marginBottom: 15,
+    overflow: "hidden",
   },
 
   header: {
@@ -181,12 +193,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 20,
+    padding: 12,
+    borderRadius: 16,
+    overflow: "hidden",
   },
 
   backBtn: {
-    backgroundColor: "#333",
+    backgroundColor: "rgba(255,255,255,0.15)",
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 8,
   },
 

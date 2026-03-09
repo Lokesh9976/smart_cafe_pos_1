@@ -1,11 +1,14 @@
+import { BlurView } from "expo-blur";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { addToCartGlobal, getCart } from "../cartStore";
+import CartSidebar from "../../components/CartSidebar";
 import { getOrderContext } from "../orderContextStore";
 
 import {
   FlatList,
   Image,
+  ImageBackground,
   Modal,
   Pressable,
   ScrollView,
@@ -215,14 +218,12 @@ export default function SouthIndian() {
     router.replace("/(tabs)/category");
   }
 
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const listRef = useRef<FlatList>(null);
 
-  const numColumns =
-    width >= 1200 ? 6 : width >= 900 ? 5 : width >= 600 ? 4 : 2;
-  const GAP = 12;
-  const PAD = 12;
-  const size = (width - PAD * 2 - GAP * (numColumns - 1)) / numColumns;
+  const availableWidth = width - (width > 900 ? 350 : 0) - (width > 900 ? 20 : 32);
+  const numColumns = width > 1100 ? 4 : width > 750 ? 3 : 2;
+  const size = Math.floor(availableWidth / numColumns) - 16;
 
   const [cart, setCart] = useState(getCart());
   const [selectedGroup, setSelectedGroup] = useState("Prata");
@@ -276,166 +277,158 @@ export default function SouthIndian() {
 
   const renderFoodItem = ({ item }: { item: FoodItem }) => {
     return (
-      <TouchableOpacity
-        style={[styles.foodCard, { width: size }]}
-        onPress={() => openCustomize(item)}
-      >
-        <View style={styles.foodImageBox}>
-          <Image
-            source={FOOD_IMAGES[item.id] || DEFAULT_IMAGE}
-            style={styles.foodImage}
-            resizeMode="cover"
-          />
-        </View>
-        <View style={styles.foodInfo}>
-          <Text style={styles.foodName} numberOfLines={2}>
-            {item.name}
-          </Text>
-          <Text style={styles.foodPrice}>$ {item.price.toFixed(2)}</Text>
-          <View style={styles.addBtn}>
-            <Text style={styles.addBtnText}>Select & Customize</Text>
+      <View style={{ width: size, margin: 8 }}>
+        <TouchableOpacity
+          style={styles.foodCard}
+          onPress={() => openCustomize(item)}
+        >
+          <View style={styles.foodImageBox}>
+            <Image
+              source={FOOD_IMAGES[item.id] || DEFAULT_IMAGE}
+              style={styles.foodImage}
+              resizeMode="cover"
+            />
           </View>
-        </View>
-      </TouchableOpacity>
+          <View style={styles.foodInfo}>
+            <Text style={styles.foodName} numberOfLines={2}>
+              {item.name}
+            </Text>
+            <Text style={styles.foodPrice}>$ {item.price.toFixed(2)}</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     );
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0b0b0b" }}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.title}>SOUTH INDIAN</Text>
+    <View style={{ flex: 1 }}>
+      <ImageBackground
+        source={require("../../assets/images/11.jpg")}
+        style={{ width, height }}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay}>
+          {/* RESPONSIVE DUAL-PANE WRAPPER */}
+          <View style={{ flex: 1, flexDirection: width > 900 ? "row" : "column", padding: width > 900 ? 10 : 0, paddingTop: width > 900 ? 10 : 40 }}>
+            {/* MAIN CONTENT SURFACE */}
+            <BlurView intensity={50} tint="dark" style={[styles.mainContentSurface, width > 900 ? { flex: 1, padding: 10 } : { flex: 1, padding: 8, margin: 8 }]}>
+              {/* HEADER */}
+              <View style={styles.header}>
+                <Text style={styles.title}>SOUTH INDIAN</Text>
 
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          {/* Cart Button */}
-          <Pressable
-            onPress={() => router.replace("/cart")}
-            style={styles.cartBtn}
-          >
-            <Text style={styles.cartText}>Cart</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  {width <= 900 && (
+                    <Pressable
+                      onPress={() => router.replace("/cart")}
+                      style={styles.cartBtn}
+                    >
+                      <Text style={styles.cartText}>Cart</Text>
+                      {totalItems > 0 && (
+                        <View style={styles.badge}>
+                          <Text style={styles.badgeText}>{totalItems}</Text>
+                        </View>
+                      )}
+                    </Pressable>
+                  )}
 
-            {totalItems > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{totalItems}</Text>
-              </View>
-            )}
-          </Pressable>
-
-          {/* Back Button */}
-          <Pressable
-            onPress={() => {
-              if (orderContext?.section === "SECTION_1") {
-                router.replace("/sections/section1");
-              } else if (orderContext?.section === "SECTION_2") {
-                router.replace("/sections/section2");
-              } else if (orderContext?.section === "SECTION_3") {
-                router.replace("/sections/section3");
-              } else if (orderContext?.orderType === "TAKEAWAY") {
-                router.replace("/sections/takeaway");
-              }
-            }}
-            style={styles.backBtn}
-          >
-            <Text style={styles.backText}>Back</Text>
-          </Pressable>
-        </View>
-      </View>
-      {/* KITCHENS */}
-      <View style={styles.kitchensContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.kitchensScroll}
-        >
-          {KITCHENS.map((k) => {
-            const isActive = k.name === ACTIVE_KITCHEN;
-            return (
-              <TouchableOpacity
-                key={k.id}
-                style={[
-                  styles.kitchenCard,
-                  isActive
-                    ? styles.kitchenCardActive
-                    : styles.kitchenCardInactive,
-                  { width: width < 600 ? 80 : 100 },
-                ]}
-                onPress={() => {
-                  if (!isActive) router.replace(k.route as any);
-                }}
-              >
-                <View
-                  style={[
-                    styles.iconContainer,
-                    {
-                      backgroundColor: isActive
-                        ? "rgba(255,255,255,0.2)"
-                        : "rgba(0,0,0,0.3)",
-                    },
-                  ]}
-                >
-                  <Text style={styles.kitchenIcon}>{k.icon}</Text>
+                  <Pressable
+                    onPress={() => router.replace("/(tabs)/category")}
+                    style={styles.backBtn}
+                  >
+                    <Text style={styles.backText}>Back</Text>
+                  </Pressable>
                 </View>
-                <Text
-                  style={[
-                    styles.kitchenName,
-                    {
-                      color: isActive ? "#052b12" : "#fff",
-                      textAlign: "center",
-                    },
-                  ]}
-                  numberOfLines={2}
+              </View>
+
+              {/* KITCHENS CATEGORY CARDS */}
+              <View style={styles.kitchensContainer}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.kitchensScroll}
                 >
-                  {k.name}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+                  {KITCHENS.map((k) => {
+                    const isActive = k.name === ACTIVE_KITCHEN;
+                    return (
+                      <TouchableOpacity
+                        key={k.id}
+                        style={[
+                          styles.kitchenCard,
+                          isActive ? styles.kitchenCardActive : styles.kitchenCardInactive,
+                        ]}
+                        onPress={() => {
+                          if (!isActive) router.replace(k.route as any);
+                        }}
+                      >
+                        <Text style={[styles.kitchenIcon, { marginBottom: 4 }]}>{k.icon}</Text>
+                        <Text
+                          style={[
+                            styles.kitchenName,
+                            { color: isActive ? "#FFFFFF" : "#9CA3AF" },
+                          ]}
+                          numberOfLines={2}
+                        >
+                          {k.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
 
-      {/* GROUPS */}
-      <View style={styles.row}>
-        {GROUPS.map((g) => {
-          const active = g.name === selectedGroup;
-          return (
-            <TouchableOpacity
-              key={g.id}
-              style={[styles.chip, active ? styles.active : styles.inactive]}
-              onPress={() => {
-                setSelectedGroup(g.name);
-                listRef.current?.scrollToOffset({ offset: 0, animated: true });
-              }}
-            >
-              <Text
-                style={{
-                  color: active ? "#052b12" : "#fff",
-                  fontWeight: "800",
-                }}
-              >
-                {g.name}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+              {/* SUB CATEGORY PILLS */}
+              <View style={{ marginBottom: 12 }}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 12, paddingHorizontal: 12 }}
+                >
+                  {GROUPS.map((g) => {
+                    const active = g.name === selectedGroup;
+                    return (
+                      <TouchableOpacity
+                        key={g.id}
+                        style={[styles.chip, active ? styles.active : styles.inactive]}
+                        onPress={() => {
+                          setSelectedGroup(g.name);
+                          listRef.current?.scrollToOffset({ offset: 0, animated: true });
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: active ? "#FFFFFF" : "#D1D5DB",
+                            fontWeight: "700",
+                          }}
+                        >
+                          {g.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
 
-      {/* ITEMS */}
-      <FlatList
-        ref={listRef}
-        data={items}
-        numColumns={numColumns}
-        key={numColumns + selectedGroup}
-        keyExtractor={(i) => i.id}
-        columnWrapperStyle={{ gap: GAP }}
-        contentContainerStyle={{ gap: GAP, padding: PAD, paddingBottom: 120 }}
-        renderItem={renderFoodItem}
-        showsVerticalScrollIndicator
-      />
+              {/* ITEMS GRID */}
+              <FlatList
+                ref={listRef}
+                data={items}
+                numColumns={numColumns}
+                key={numColumns + selectedGroup}
+                keyExtractor={(i) => i.id}
+                contentContainerStyle={{ paddingBottom: 120, paddingTop: 10 }}
+                renderItem={renderFoodItem}
+                showsVerticalScrollIndicator={false}
+              />
+            </BlurView>
+
+            {/* SIDEBAR COMPONENT */}
+            {width > 900 && <CartSidebar width={350} />}
+          </View>
 
       {/* MODAL */}
       <Modal visible={showCustomize} transparent animationType="slide">
         <View style={styles.modalBackdrop}>
-          <View style={styles.modalBox}>
+          <BlurView intensity={40} tint="dark" style={styles.modalBox}>
             <Text style={styles.modalTitle}>{selectedItem?.name}</Text>
 
             <Text style={styles.modalLabel}>Spicy</Text>
@@ -517,18 +510,29 @@ export default function SouthIndian() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </BlurView>
         </View>
       </Modal>
+        </View>
+      </ImageBackground>
     </View>
   );
 }
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.25)",
+  },
+  mainContentSurface: {
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
   header: {
     height: 60,
-    backgroundColor: "#111",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -565,20 +569,25 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
 
-  kitchensContainer: { backgroundColor: "#111", paddingVertical: 12 },
+  kitchensContainer: { paddingVertical: 12, marginBottom: 10 },
   kitchensScroll: { paddingHorizontal: 8, gap: 8 },
 
   kitchenCard: {
-    borderRadius: 16,
-    padding: 12,
+    width: 110,
+    height: 110,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: "#E5E7EB",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   kitchenCardActive: { backgroundColor: "#22c55e", borderColor: "#22c55e" },
-  kitchenCardInactive: { backgroundColor: "#2a2a2a", borderColor: "#333" },
+  kitchenCardInactive: { backgroundColor: "rgba(255,255,255,0.05)" },
 
   iconContainer: {
     width: 40,
@@ -598,45 +607,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 10,
   },
-  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  chip: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 20 },
   active: { backgroundColor: "#22c55e" },
-  inactive: { backgroundColor: "#333" },
+  inactive: { backgroundColor: "rgba(255,255,255,0.1)" },
 
   foodCard: {
-    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    shadowOpacity: 0.06,
+    elevation: 2,
+  },
+  foodImageBox: { 
+    width: "100%", 
+    height: 130, 
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     overflow: "hidden",
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-
-  foodImageBox: {
-    width: "100%",
-    aspectRatio: 1.2,
-    backgroundColor: "#000",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  foodImage: {
-    width: "100%",
-    height: "100%",
-  },
-  foodInfo: { padding: 10 },
-  foodName: { color: "#fff", fontWeight: "700", fontSize: 13, marginBottom: 4 },
-  foodPrice: {
-    color: "#9ef01a",
-    fontWeight: "800",
-    fontSize: 13,
     marginBottom: 8,
+    backgroundColor: "rgba(0,0,0,0.05)",
   },
+  foodImage: { width: "100%", height: "100%" },
 
-  addBtn: {
-    backgroundColor: "#22c55e",
-    paddingVertical: 8,
-    borderRadius: 10,
-    alignItems: "center",
+  foodInfo: { paddingHorizontal: 8, paddingBottom: 8, flex: 1, justifyContent: "space-between" },
+  foodName: { color: "#1F2937", fontWeight: "600", fontSize: 15, marginBottom: 4 },
+  foodPrice: {
+    color: "#22c55e",
+    fontWeight: "800",
+    fontSize: 14,
   },
-  addBtnText: { color: "#052b12", fontWeight: "900", fontSize: 12 },
 
   modalBackdrop: {
     flex: 1,
@@ -646,9 +646,9 @@ const styles = StyleSheet.create({
   },
   modalBox: {
     width: "90%",
-    backgroundColor: "#111",
     borderRadius: 20,
     padding: 20,
+    overflow: "hidden",
   },
   modalTitle: {
     color: "#9ef01a",

@@ -12,13 +12,13 @@ import {
   View,
 } from "react-native";
 
-import { useCartStore, CartItem } from "./cartStore";
+import { CartItem, useCartStore } from "./cartStore";
 
 import { holdOrder } from "./heldOrdersStore";
 import { getNextOrderId } from "./orderIdStore";
 import { setTableActive, setTableHold } from "./tableStatusStore";
 
-import { useActiveOrdersStore, OrderItem } from "./activeOrdersStore";
+import { OrderItem, useActiveOrdersStore } from "./activeOrdersStore";
 
 import { useOrderContextStore } from "./orderContextStore";
 
@@ -97,12 +97,16 @@ export default function CartScreen() {
     /* mark table active */
     if (context.orderType === "DINE_IN") {
       setTableActive(context.section!, context.tableNo!, targetOrderId);
+      clearCart();
+      router.replace(`/(tabs)/category?section=${context.section}`);
+    } else if (context.orderType === "TAKEAWAY") {
+      setTableActive("TAKEAWAY", context.takeawayNo!, targetOrderId);
+      clearCart();
+      router.replace(`/(tabs)/category?section=TAKEAWAY`);
+    } else {
+      clearCart();
+      router.replace("/(tabs)/category");
     }
-
-    // Critical step: the cart only stores NEW unsent items. Empty it now.
-    clearCart();
-
-    router.replace("/(tabs)/category");
   };
 
   return (
@@ -115,7 +119,7 @@ export default function CartScreen() {
         <View style={styles.overlay}>
           {/* TOP BAR */}
 
-          <BlurView intensity={70} tint="dark" style={styles.topBar}>
+          <BlurView intensity={40} tint="dark" style={styles.topBar}>
             <Pressable
                style={styles.holdListBtn}
                onPress={() => router.push("/heldOrders")}
@@ -148,7 +152,7 @@ export default function CartScreen() {
             </Text>
           )}
 
-          <Text style={styles.title}>TICKET</Text>
+          <Text style={styles.title}>CART</Text>
 
           {/* COMBINED ITEMS LIST */}
 
@@ -157,14 +161,14 @@ export default function CartScreen() {
             keyExtractor={(i, index) => i.lineItemId + index}
             contentContainerStyle={{ paddingBottom: 20 }}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>Ticket is Empty</Text>
+              <Text style={styles.emptyText}>Cart is Empty</Text>
             }
             renderItem={({ item }) => {
               // Quick check if item is from ActiveOrder store (has status prop) or Cart store (missing status prop)
               const isSent = "status" in item && item.status === "SENT";
 
               return (
-                <BlurView intensity={65} tint="dark" style={styles.row}>
+                <BlurView intensity={40} tint="dark" style={styles.row}>
                   <View style={styles.itemInfo}>
                     <View
                       style={{ flexDirection: "row", alignItems: "center" }}
@@ -180,10 +184,10 @@ export default function CartScreen() {
 
                     {/* Modifiers Display Example */}
                     <View style={styles.modifierContainer}>
-                       {item.spicy && <Text style={styles.modifierText}>Spicy: {item.spicy}</Text>}
-                       {item.oil && <Text style={styles.modifierText}>Oil: {item.oil}</Text>}
-                       {item.salt && <Text style={styles.modifierText}>Salt: {item.salt}</Text>}
-                       {item.sugar && <Text style={styles.modifierText}>Sugar: {item.sugar}</Text>}
+                       {item.spicy && item.spicy !== "Medium" && <Text style={styles.modifierText}>Spicy: {item.spicy}</Text>}
+                       {item.oil && item.oil !== "Normal" && <Text style={styles.modifierText}>Oil: {item.oil}</Text>}
+                       {item.salt && item.salt !== "Normal" && <Text style={styles.modifierText}>Salt: {item.salt}</Text>}
+                       {item.sugar && item.sugar !== "Normal" && <Text style={styles.modifierText}>Sugar: {item.sugar}</Text>}
                        {item.note && <Text style={styles.modifierText}>Note: {item.note}</Text>}
                     </View>
 
@@ -222,7 +226,7 @@ export default function CartScreen() {
           {/* SUBTOTAL */}
 
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Ticket Total</Text>
+            <Text style={styles.summaryLabel}>Cart Total</Text>
             <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
           </View>
 
@@ -244,11 +248,15 @@ export default function CartScreen() {
                     orderContext.tableNo!,
                     orderId,
                   );
+                  clearCart();
+                  router.replace(`/(tabs)/category?section=${orderContext.section}`);
+                } else if (orderContext.orderType === "TAKEAWAY") {
+                  clearCart();
+                  router.replace(`/(tabs)/category?section=TAKEAWAY`);
+                } else {
+                  clearCart();
+                  router.replace("/(tabs)/category");
                 }
-
-                clearCart();
-
-                router.replace("/(tabs)/category");
               }}
             >
                <Text style={styles.holdText}>Hold Order</Text>
@@ -278,7 +286,7 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.25)",
     padding: 20,
   },
 
@@ -286,9 +294,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "rgba(255,255,255,0.15)",
-    borderWidth: 1,
     padding: 12,
     borderRadius: 16,
     marginBottom: 20,
@@ -353,11 +358,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "rgba(255,255,255,0.15)",
-    borderWidth: 1,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 18,
     marginBottom: 10,
     overflow: "hidden",
   },

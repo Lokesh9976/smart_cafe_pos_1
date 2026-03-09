@@ -156,6 +156,16 @@ export default function TimeEntry() {
                 <Text style={styles.btnText}>OUT</Text>
               </TouchableOpacity>
             </View>
+
+            <View style={[styles.buttons, { marginTop: 15 }]}>
+              <TouchableOpacity style={styles.breakInBtn}>
+                <Text style={styles.btnText}>Break IN</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.breakOutBtn}>
+                <Text style={styles.btnText}>Break OUT</Text>
+              </TouchableOpacity>
+            </View>
           </BlurView>
 
           {/* KEYPAD */}
@@ -266,9 +276,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  breakInBtn: {
+    backgroundColor: "#60a5fa",
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  breakOutBtn: {
+    backgroundColor: "#c084fc",
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   btnText: {
     fontWeight: "800",
-    fontSize: 16,
+    fontSize: 14,
+    textAlign: "center",
   },
 
   keypad: {

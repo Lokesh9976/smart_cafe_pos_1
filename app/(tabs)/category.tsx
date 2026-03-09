@@ -1,5 +1,5 @@
 import { BlurView } from "expo-blur";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -15,6 +15,7 @@ import {
 import { clearCart } from "../cartStore";
 import { setOrderContext } from "../orderContextStore";
 import { getTables } from "../tableStatusStore";
+import { getHeldOrders, HeldOrder } from "../heldOrdersStore";
 
 // Type definitions
 type TableItem = {
@@ -52,8 +53,16 @@ export default function Category() {
   const { width } = useWindowDimensions();
   const router = useRouter();
 
+  const { section: urlSection } = useLocalSearchParams<{ section?: string }>();
+  
   const [activeTab, setActiveTab] = useState<string>("SECTION_1");
   const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    if (urlSection && SECTIONS.includes(urlSection)) {
+      setActiveTab(urlSection);
+    }
+  }, [urlSection]);
 
   // Force re-render for timers
   useEffect(() => {
@@ -73,7 +82,7 @@ export default function Category() {
     (width - SCREEN_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
 
   // Responsive Fonts
-  const numberFont = Math.max(16, Math.min(24, itemSize * 0.3));
+  const numberFont = Math.max(14, Math.min(18, itemSize * 0.22));
   const smallFont = Math.max(12, Math.min(16, itemSize * 0.2));
 
   // Determine current active table list
@@ -83,13 +92,10 @@ export default function Category() {
   const renderItem = ({ item }: { item: TableItem }) => {
     const tables = getTables();
 
-    // Check if table is occupied based on section and label
-    const tableData =
-      activeTab === "TAKEAWAY"
-        ? undefined // Currently takeaway mockup doesn't tightly couple with tableStatusStore, but you can update if needed
-        : tables.find(
-            (t) => t.section === activeTab && t.tableNo === item.label
-          );
+    // Check if table or takeaway number is occupied
+    const tableData = tables.find(
+      (t) => t.section === activeTab && t.tableNo === item.label
+    );
 
     let borderColor = "rgba(255,255,255,0.2)";
     let bgColor = "rgba(255,255,255,0.05)";
@@ -102,17 +108,17 @@ export default function Category() {
 
       // Card Background and Number Colors mapping elapsed time
       if (minutes >= 30) {
-        bgColor = "rgba(220, 38, 38, 0.15)";     
-        tableNoColor = "#ffb3b3";               
-        borderColor = "rgba(248, 113, 113, 0.5)";
+        bgColor = "rgba(220, 38, 38, 0.3)";
+        tableNoColor = "#fca5a5";
+        borderColor = "rgba(248, 113, 113, 0.8)";
       } else if (minutes >= 15) {
-        bgColor = "rgba(217, 119, 6, 0.15)";     
-        tableNoColor = "#ffe699";               
-        borderColor = "rgba(251, 191, 36, 0.5)";
+        bgColor = "rgba(217, 119, 6, 0.3)";
+        tableNoColor = "#fcd34d";
+        borderColor = "rgba(251, 191, 36, 0.8)";
       } else {
-        bgColor = "rgba(255, 255, 255, 0.05)";     
-        tableNoColor = "#ffffff";               
-        borderColor = "rgba(255, 255, 255, 0.35)";
+        bgColor = "rgba(22, 163, 74, 0.3)";
+        tableNoColor = "#86efac";
+        borderColor = "rgba(74, 222, 128, 0.8)";
       }
 
       const time = new Date(tableData.startTime);
@@ -121,6 +127,25 @@ export default function Category() {
 
       timeText = `${hours}:${mins}`;
       orderText = `#${tableData.orderId}`;
+    } else {
+      const heldOrders = getHeldOrders();
+      const isHeld = heldOrders.some((h: HeldOrder) => {
+        if (activeTab === "TAKEAWAY") {
+          return h.context?.orderType === "TAKEAWAY" && h.context.takeawayNo === item.label;
+        }
+        return (
+          h.context?.orderType === "DINE_IN" &&
+          h.context.section === activeTab &&
+          h.context.tableNo === item.label
+        );
+      });
+
+      if (isHeld) {
+        bgColor = "rgba(202, 138, 4, 0.3)"; // Dark yellow / Gold
+        tableNoColor = "#fde047";
+        borderColor = "rgba(234, 179, 8, 0.8)";
+        timeText = "Held";
+      }
     }
 
     return (
@@ -152,7 +177,7 @@ export default function Category() {
           router.push("/menu/thai_kitchen");
         }}
       >
-        <BlurView intensity={55} tint="dark" style={styles.glassInner}>
+        <BlurView intensity={40} tint="dark" style={styles.glassInner}>
           <View style={styles.tableContent}>
             <Text
               style={[
@@ -190,7 +215,7 @@ export default function Category() {
       <View style={styles.overlay} />
 
       {/* HORIZONTAL NAVIGATION BAR */}
-      <BlurView intensity={60} tint="dark" style={styles.topNavContainer}>
+      <BlurView intensity={40} tint="dark" style={styles.topNavContainer}>
         <View style={styles.tabsWrapper}>
           {SECTIONS.map((section) => {
             const isActive = activeTab === section;
@@ -258,7 +283,7 @@ const styles = StyleSheet.create({
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.25)",
   },
 
   /* TOP NAVIGATION */
@@ -268,8 +293,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.1)",
     zIndex: 10,
     overflow: "hidden",
   },
@@ -334,9 +357,9 @@ const styles = StyleSheet.create({
 
   /* GRID CARDS */
   tableBox: {
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: "hidden",
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
 
   glassInner: {
@@ -351,7 +374,7 @@ const styles = StyleSheet.create({
   },
 
   tableNumber: {
-    fontWeight: "900",
+    fontWeight: "800",
     marginBottom: 4,
     textShadowColor: "rgba(0,0,0,0.8)",
     textShadowOffset: { width: 0, height: 1 },
