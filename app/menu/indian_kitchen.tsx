@@ -476,7 +476,7 @@ export default function IndianKitchen() {
   return (
     <View style={{ flex: 1 }}>
       <ImageBackground
-        source={require("../../assets/images/11.jpg")}
+        source={require("../../assets/images/003.jpg")}
         style={{ width, height }}
         resizeMode="cover"
       >

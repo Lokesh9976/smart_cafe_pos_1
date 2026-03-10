@@ -208,7 +208,7 @@ export default function Category() {
 
   return (
     <ImageBackground
-      source={require("../../assets/images/11.jpg")}
+      source={require("../../assets/images/003.jpg")}
       style={styles.background}
       resizeMode="cover"
     >
