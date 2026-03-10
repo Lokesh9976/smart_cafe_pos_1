@@ -235,47 +235,53 @@ export default function CartScreen() {
           {/* ACTION BUTTONS */}
 
           <View style={styles.bottomButtons}>
-            <Pressable
-              style={styles.holdBtn}
-              onPress={() => {
-                const orderId = activeOrder?.orderId || getNextOrderId();
+            {cart.length > 0 && (
+              <>
+                <Pressable
+                  style={styles.holdBtn}
+                  onPress={() => {
+                    const orderId = activeOrder?.orderId || getNextOrderId();
 
-                holdOrder(orderId, cart, orderContext); // Might need updating if HeldOrders also needs refactoring later
+                    holdOrder(orderId, cart, orderContext); // Might need updating if HeldOrders also needs refactoring later
 
-                if (orderContext.orderType === "DINE_IN") {
-                  setTableHold(
-                    orderContext.section!,
-                    orderContext.tableNo!,
-                    orderId,
-                  );
-                  clearCart();
-                  router.replace(`/(tabs)/category?section=${orderContext.section}`);
-                } else if (orderContext.orderType === "TAKEAWAY") {
-                  clearCart();
-                  router.replace(`/(tabs)/category?section=TAKEAWAY`);
-                } else {
-                  clearCart();
-                  router.replace("/(tabs)/category");
-                }
-              }}
-            >
-               <Text style={styles.holdText}>Hold Order</Text>
-            </Pressable>
+                    if (orderContext.orderType === "DINE_IN") {
+                      setTableHold(
+                        orderContext.section!,
+                        orderContext.tableNo!,
+                        orderId,
+                      );
+                      clearCart();
+                      router.replace(`/(tabs)/category?section=${orderContext.section}`);
+                    } else if (orderContext.orderType === "TAKEAWAY") {
+                      clearCart();
+                      router.replace(`/(tabs)/category?section=TAKEAWAY`);
+                    } else {
+                      clearCart();
+                      router.replace("/(tabs)/category");
+                    }
+                  }}
+                >
+                   <Text style={styles.holdText}>Hold Order</Text>
+                </Pressable>
 
-            <Pressable 
-              style={[styles.sendBtn, cart.length === 0 && styles.disabledBtn]} 
-              onPress={sendOrder}
-              disabled={cart.length === 0}
-            >
-              <Text style={styles.sendText}>Send Order</Text>
-            </Pressable>
+                <Pressable 
+                  style={[styles.sendBtn, cart.length === 0 && styles.disabledBtn]} 
+                  onPress={sendOrder}
+                  disabled={cart.length === 0}
+                >
+                  <Text style={styles.sendText}>Send Order</Text>
+                </Pressable>
+              </>
+            )}
 
-            <Pressable
-              style={styles.billBtn}
-              onPress={() => router.push("/summary")} // Checkout process
-            >
-              <Text style={styles.billText}>Proceed to Bill</Text>
-            </Pressable>
+            {(activeOrder?.items.length || 0) > 0 && cart.length === 0 && (
+              <Pressable
+                style={styles.billBtn}
+                onPress={() => router.push("/summary")} // Checkout process
+              >
+                <Text style={styles.billText}>Proceed to Bill</Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </ImageBackground>

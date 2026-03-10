@@ -5,7 +5,6 @@ import { addToCartGlobal, getCart } from "../cartStore";
 import { getOrderContext } from "../orderContextStore";
 
 import {
-  Dimensions,
   FlatList,
   Image,
   ImageBackground,
@@ -17,8 +16,9 @@ import {
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  View,
+  View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import CartSidebar from "../../components/CartSidebar";
 
 /* ================= KITCHENS ================= */
@@ -297,8 +297,9 @@ export default function ThaiKitchen() {
   const listRef = useRef<FlatList>(null);
 
   const availableWidth = width - (width > 900 ? 350 : 0) - (width > 900 ? 20 : 32);
-  const numColumns = width > 1100 ? 4 : width > 750 ? 3 : 2;
-  const size = Math.floor(availableWidth / numColumns) - 16;
+  let dishColumns = 2;
+  if (width > 800) dishColumns = 3;
+  if (width > 1200) dishColumns = 4;
 
   const [cart, setCart] = useState(getCart());
   const [selectedGroup, setSelectedGroup] = useState("Thai_Soup");
@@ -348,19 +349,17 @@ export default function ThaiKitchen() {
 
   const renderFoodItem = ({ item }: { item: FoodItem }) => {
     return (
-      <View style={{ width: size, margin: 8 }}>
+      <View style={{ flex: 1, maxWidth: `${100 / dishColumns}%` }}>
         <TouchableOpacity
           style={styles.foodCard}
           onPress={() => openCustomize(item)}
+          activeOpacity={0.8}
         >
-          <View style={styles.foodImageBox}>
-            <Image
-              source={FOOD_IMAGES[item.id] || DEFAULT_IMAGE}
-              style={styles.foodImage}
-              resizeMode="cover"
-            />
-          </View>
-          <View style={styles.foodInfo}>
+          <Image
+            source={FOOD_IMAGES[item.id] || DEFAULT_IMAGE}
+            style={styles.foodImage}
+          />
+          <View style={styles.dishContent}>
             <Text style={styles.foodName} numberOfLines={2}>
               {item.name}
             </Text>
@@ -372,12 +371,13 @@ export default function ThaiKitchen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
       <ImageBackground
         source={require("../../assets/images/003.jpg")}
         style={{ width, height }}
         resizeMode="cover"
       >
+        <View style={styles.backgroundOverlay} />
         <View style={styles.overlay}>
           {/* RESPONSIVE DUAL-PANE WRAPPER */}
           <View style={{ flex: 1, flexDirection: width > 900 ? "row" : "column", padding: width > 900 ? 10 : 0, paddingTop: width > 900 ? 10 : 40 }}>
@@ -485,10 +485,11 @@ export default function ThaiKitchen() {
               <FlatList
                 ref={listRef}
                 data={items}
-                numColumns={numColumns}
-                key={numColumns + selectedGroup}
+                numColumns={dishColumns}
+                key={dishColumns + selectedGroup}
                 keyExtractor={(i) => i.id}
-                contentContainerStyle={{ paddingBottom: 120, paddingTop: 10 }}
+                columnWrapperStyle={{ gap: 12 }}
+                contentContainerStyle={{ gap: 12, paddingBottom: 120, paddingTop: 10 }}
                 renderItem={renderFoodItem}
                 showsVerticalScrollIndicator={false}
               />
@@ -499,20 +500,20 @@ export default function ThaiKitchen() {
           </View>
 
       {/* MODAL */}
-      <Modal visible={showCustomize} transparent animationType="slide">
+      <Modal visible={showCustomize} transparent animationType="fade">
         <View style={styles.modalBackdrop}>
-          <BlurView intensity={40} tint="dark" style={styles.modalBox}>
+          <View style={styles.modifierContainer}>
             <Text style={styles.modalTitle}>{selectedItem?.name}</Text>
 
             {selectedItem?.priceL && (
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
+              <View style={styles.modifierRow}>
                 {["S", "L"].map((v) => (
                   <TouchableOpacity
                     key={v}
                     onPress={() => setSizeType(v as "S" | "L")}
                     style={[
-                      styles.sizeBtn,
-                      sizeType === v && { backgroundColor: "#22c55e" },
+                      styles.modifierButton,
+                      sizeType === v && styles.selectedModifier,
                     ]}
                   >
                     <Text
@@ -533,47 +534,31 @@ export default function ThaiKitchen() {
               placeholderTextColor="#888"
               value={note}
               onChangeText={setNote}
-              style={styles.noteInput}
+              style={styles.specialInput}
               multiline
             />
 
-            <View style={{ flexDirection: "row", gap: 10, marginTop: 20 }}>
+            <View style={styles.modifierFooter}>
               <TouchableOpacity
                 onPress={() => setShowCustomize(false)}
-                style={[styles.modalBtn, { backgroundColor: "#444" }]}
+                style={styles.cancelBtn}
               >
-                <Text
-                  style={{
-                    color: "#fff",
-                    textAlign: "center",
-                    fontWeight: "600",
-                  }}
-                >
-                  Cancel
-                </Text>
+                <Text style={{ color: "#fff", fontWeight: "600" }}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={confirmAdd}
-                style={[styles.modalBtn, { backgroundColor: "#22c55e" }]}
+                style={styles.addBtn}
               >
-                <Text
-                  style={{
-                    color: "#052b12",
-                    textAlign: "center",
-                    fontWeight: "900",
-                  }}
-                >
-                  Add to Cart
-                </Text>
+                <Text style={{ color: "#052b12", fontWeight: "900" }}>Add to Cart</Text>
               </TouchableOpacity>
             </View>
-          </BlurView>
+          </View>
         </View>
       </Modal>
         </View>
       </ImageBackground>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -691,27 +676,31 @@ const styles = StyleSheet.create({
   active: { backgroundColor: "#22c55e" },
   inactive: { backgroundColor: "rgba(255,255,255,0.1)" },
 
-  foodCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    shadowOpacity: 0.06,
-    elevation: 2,
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
-  foodImageBox: { 
-    width: "100%", 
-    height: 130, 
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    overflow: "hidden",
-    marginBottom: 8,
-    backgroundColor: "rgba(0,0,0,0.05)",
-  },
-  foodImage: { width: "100%", height: "100%" },
 
-  foodInfo: { paddingHorizontal: 8, paddingBottom: 8, flex: 1, justifyContent: "space-between" },
-  foodName: { color: "#1F2937", fontWeight: "600", fontSize: 15, marginBottom: 4 },
+  foodCard: {
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 14,
+    overflow: "hidden",
+    marginBottom: 2,
+  },
+  foodImage: {
+    width: "100%",
+    height: 120,
+    resizeMode: "cover",
+  },
+  dishContent: {
+    padding: 10,
+  },
+  foodName: { 
+    color: "#1F2937", 
+    fontWeight: "600", 
+    fontSize: 15, 
+    marginBottom: 4 
+  },
   foodPrice: {
     color: "#22c55e",
     fontWeight: "800",
@@ -720,15 +709,16 @@ const styles = StyleSheet.create({
 
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.8)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
     alignItems: "center",
   },
-  modalBox: {
-    width: "90%",
-    borderRadius: 20,
+  modifierContainer: {
+    width: "92%",
+    maxWidth: 420,
+    borderRadius: 18,
+    backgroundColor: "#1f2937",
     padding: 20,
-    overflow: "hidden",
   },
   modalTitle: {
     color: "#9ef01a",
@@ -737,23 +727,51 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  sizeBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: "#333",
+  modifierRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+    gap: 10,
+  },
+  modifierButton: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: "#374151",
+    alignItems: "center",
+  },
+  selectedModifier: {
+    backgroundColor: "#22c55e",
   },
 
-  noteInput: {
-    borderWidth: 1,
-    borderColor: "#444",
-    borderRadius: 12,
+  specialInput: {
+    marginTop: 14,
     padding: 12,
-    color: "#fff",
-    marginTop: 12,
+    borderRadius: 10,
+    backgroundColor: "#111827",
+    color: "white",
     minHeight: 80,
-    backgroundColor: "#222",
+    textAlignVertical: "top",
   },
 
-  modalBtn: { flex: 1, padding: 14, borderRadius: 12 },
+  modifierFooter: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#4b5563",
+    alignItems: "center",
+  },
+  addBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#22c55e",
+    alignItems: "center",
+  },
 });

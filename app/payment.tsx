@@ -7,14 +7,14 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 
 import {
-    ActivityIndicator,
-    Dimensions,
-    ImageBackground,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
 export default function PaymentScreen() {
@@ -110,7 +110,7 @@ export default function PaymentScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ImageBackground
-        source={require("../assets/images/11.jpg")}
+        source={require("../assets/images/003.jpg")}
         style={{ width: SCREEN_W, height: SCREEN_H }}
         resizeMode="cover"
       >
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.65)",
-    paddingTop: 80,
+    paddingTop: 40,
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
 
   topBar: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 20,
   },
 
   backBtn: {
