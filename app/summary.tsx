@@ -1,14 +1,13 @@
-import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import {
-  Dimensions,
-  FlatList,
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
+    Dimensions,
+    FlatList,
+    ImageBackground,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 
 import { findActiveOrder } from "./activeOrdersStore";
@@ -152,7 +151,7 @@ export default function SummaryScreen() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 80,
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
@@ -196,7 +195,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "rgba(0,0,0,0.65)",
     paddingHorizontal: 16,
     height: 65,
     borderRadius: 12,

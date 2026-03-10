@@ -3,19 +3,18 @@ import { clearCart } from "./cartStore";
 import { clearOrderContext, getOrderContext } from "./orderContextStore";
 import { clearTable } from "./tableStatusStore";
 
-import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 
 import {
-  ActivityIndicator,
-  Dimensions,
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    ImageBackground,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
 export default function PaymentScreen() {
@@ -137,14 +136,14 @@ export default function PaymentScreen() {
           {!isProcessing && !isSuccess && (
             <>
               {/* TOP BAR WITH BACK BUTTON */}
-              <BlurView intensity={40} tint="dark" style={styles.topBar}>
+              <View style={styles.topBar}>
                 <Pressable
                   style={styles.backBtn}
                   onPress={() => router.back()}
                 >
                   <Text style={styles.backText}>Back</Text>
                 </Pressable>
-              </BlurView>
+              </View>
 
               {/* ORDER CONTEXT */}
 
@@ -249,8 +248,10 @@ export default function PaymentScreen() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.25)",
-    padding: 20,
+    backgroundColor: "rgba(0,0,0,0.65)",
+    paddingTop: 80,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
 
   contextText: {
@@ -261,16 +262,13 @@ const styles = StyleSheet.create({
 
   topBar: {
     flexDirection: "row",
-    marginBottom: 20,
-    padding: 12,
-    borderRadius: 16,
-    overflow: "hidden",
+    marginBottom: 10,
   },
 
   backBtn: {
     backgroundColor: "rgba(255,255,255,0.3)",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 8,
   },
 

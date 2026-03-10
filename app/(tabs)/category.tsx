@@ -1,21 +1,21 @@
 import { BlurView } from "expo-blur";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Dimensions,
   FlatList,
   ImageBackground,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   useWindowDimensions,
-  View,
+  View
 } from "react-native";
 
 import { clearCart } from "../cartStore";
+import { getHeldOrders, HeldOrder } from "../heldOrdersStore";
 import { setOrderContext } from "../orderContextStore";
 import { getTables } from "../tableStatusStore";
-import { getHeldOrders, HeldOrder } from "../heldOrdersStore";
 
 // Type definitions
 type TableItem = {
@@ -219,17 +219,28 @@ export default function Category() {
         <View style={styles.tabsWrapper}>
           {SECTIONS.map((section) => {
             const isActive = activeTab === section;
-            const displayName = section.replace("_", " ");
+            let displayName = section.replace("_", " ");
+            
+            // Abbreviate "SECTION" to "S" and "TAKEAWAY" to "T/A" on narrow mobile views
+            if (width < 600) {
+              if (section.startsWith("SECTION_")) {
+                displayName = section.replace("SECTION_", "S-");
+              } else if (section === "TAKEAWAY") {
+                displayName = "T/A";
+              }
+            }
+
             return (
               <TouchableOpacity
                 key={section}
                 onPress={() => setActiveTab(section)}
-                style={[styles.tabBtn, isActive && styles.activeTabBtn]}
+                style={[styles.tabBtn, isActive && styles.activeTabBtn, width < 600 && styles.tabBtnNarrow]}
               >
                 <Text
                   style={[
                     styles.tabText,
                     isActive && styles.activeTabText,
+                    width < 600 && styles.tabTextNarrow,
                   ]}
                 >
                   {displayName}
@@ -274,6 +285,8 @@ export default function Category() {
   );
 }
 
+const { width } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -291,15 +304,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: width < 600 ? 10 : 20,
+    paddingVertical: width < 600 ? 8 : 12,
     zIndex: 10,
     overflow: "hidden",
   },
 
   tabsWrapper: {
     flexDirection: "row",
-    gap: 12,
+    gap: width < 600 ? 6 : 12,
     flexWrap: "wrap",
     flex: 1,
   },
@@ -324,6 +337,15 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.5,
   },
+  
+  tabBtnNarrow: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  
+  tabTextNarrow: {
+    fontSize: 14,
+  },
 
   activeTabText: {
     color: "#d7ff9a",
@@ -332,13 +354,13 @@ const styles = StyleSheet.create({
 
   navRightGroup: {
     flexDirection: "row",
-    gap: 12,
-    marginLeft: 20,
+    gap: width < 600 ? 6 : 12,
+    marginLeft: width < 600 ? 10 : 20,
   },
 
   headerActionBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: width < 600 ? 10 : 16,
+    paddingVertical: width < 600 ? 8 : 12,
     borderRadius: 10,
     backgroundColor: "rgba(255,255,255,0.15)",
   },
